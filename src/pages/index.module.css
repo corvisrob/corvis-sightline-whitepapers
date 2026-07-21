@@ -1,0 +1,56 @@
+.heroBanner {
+  padding: 5rem 0 4rem;
+  text-align: center;
+  background: var(--ifm-color-primary-darkest);
+  color: #eaf6f8;
+}
+
+[data-theme='dark'] .heroBanner {
+  background: #051013;
+}
+
+.heroTitle {
+  font-size: 3.5rem;
+  margin-bottom: 0.5rem;
+  color: inherit;
+}
+
+.heroTagline {
+  font-size: 1.35rem;
+  margin: 0 auto;
+  max-width: 34rem;
+  color: inherit;
+  opacity: 0.9;
+}
+
+.heroRule {
+  display: block;
+  width: 4rem;
+  height: 2px;
+  margin: 1.75rem auto;
+  background: var(--ifm-color-primary-lightest);
+}
+
+.heroLead {
+  max-width: 30rem;
+  margin: 0 auto 2rem;
+  opacity: 0.85;
+}
+
+.buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+@media screen and (max-width: 996px) {
+  .heroBanner {
+    padding: 3rem 1.5rem;
+  }
+
+  .heroTitle {
+    font-size: 2.5rem;
+  }
+}

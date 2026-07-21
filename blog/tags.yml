@@ -1,0 +1,29 @@
+overview:
+  label: Overview
+  permalink: /overview
+  description: Introductions to Sightline and how its pieces fit together.
+
+tetra:
+  label: Tetra
+  permalink: /tetra
+  description: Architecture modelling - zones, devices, networks, flows.
+
+bowtie:
+  label: Bowtie
+  permalink: /bowtie
+  description: Risk modelling - causes, controls, consequences.
+
+metron:
+  label: Metron
+  permalink: /metron
+  description: Compliance assessment against requirement packages.
+
+prism:
+  label: Prism
+  permalink: /prism
+  description: Asset intelligence - collection, normalisation, snapshots.
+
+standards:
+  label: Standards
+  permalink: /standards
+  description: Framework alignment - AESCSF, ISA/IEC 62443, and related standards.
