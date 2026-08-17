@@ -25,6 +25,15 @@ const config: Config = {
 
   onBrokenLinks: 'throw',
 
+  // Pinned explicitly rather than inherited. The inherited default decides which
+  // of two failure modes a bad placeholder gets: under 'mdx' the build fails,
+  // under 'detect' it builds and the placeholder is silently deleted from the
+  // rendered text. A loud failure is the better backstop behind the publish
+  // tool's lint, so this is 'mdx' and must stay 'mdx'.
+  markdown: {
+    format: 'mdx',
+  },
+
   i18n: {
     defaultLocale: 'en',
     locales: ['en'],
@@ -38,6 +47,26 @@ const config: Config = {
           path: 'docs',
           routeBasePath: 'docs',
           sidebarPath: './sidebars.ts',
+          // The plugin set none, so it inherited only the Docusaurus defaults and
+          // any .md dropped under docs/ became a public page. The first four
+          // entries ARE those defaults and must stay: '**/_*.{...}' is what keeps
+          // an imported partial from also being routed as a page of its own.
+          // The rest mirror the publish deny-list, so a directory that must never
+          // reach the site is refused by the site as well as by the publish tool.
+          exclude: [
+            '**/_*.{js,jsx,ts,tsx,md,mdx}',
+            '**/_*/**',
+            '**/*.test.{js,jsx,ts,tsx}',
+            '**/__tests__/**',
+            '**/plans/**',
+            '**/internal/**',
+            '**/.claude/**',
+            '**/demo/customer-walkthrough/**',
+            '**/AGENTS.md',
+            '**/CLAUDE.md',
+            '**/PROJECT_STATUS.md',
+            '**/PUBLISH.md',
+          ],
           editUrl:
             'https://github.com/corvisrob/corvis-sightline-whitepapers/tree/main/',
         },
