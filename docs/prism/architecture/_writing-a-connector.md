@@ -1,5 +1,3 @@
-# Writing a Connector
-
 A connector reads one type of source and transmits normalised snapshots to Prism. This guide takes you from an empty directory to a transmitting collector.
 
 ## What you need, and what you do not

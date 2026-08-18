@@ -1,5 +1,3 @@
-# Create and edit rules
-
 A rule decides which fields move, from where, to where, and how strongly. This page covers creating and editing one.
 
 **Start in your [runtime instance](/docs/prism/install/runtime-instance).** The rule editor reads `./rules` relative to your current directory.

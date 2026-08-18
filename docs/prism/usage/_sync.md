@@ -1,5 +1,3 @@
-# Run a sync rule
-
 A sync rule merges records from a connected dataset into a synthetic dataset. Running one is a single command. Understanding what it produced is the part worth reading.
 
 **Start in your [runtime instance](/docs/prism/install/runtime-instance).** The sync command resolves its rule against the current directory.

@@ -1,5 +1,3 @@
-# Upgrading Prism
-
 An upgrade moves an existing [runtime instance](/docs/prism/install/runtime-instance) to a newer version of Prism. It does not move your configuration or your data — those stay where they are, and this page tells you exactly which of them survive.
 
 Read [Version compatibility](/docs/prism/upgrade/compatibility) before you start.

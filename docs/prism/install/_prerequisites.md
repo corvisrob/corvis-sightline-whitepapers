@@ -1,5 +1,3 @@
-# Prerequisites
-
 This page lists what must be present before you install Sightline Prism, the operator CLI or the Windmill layer.
 
 Every requirement on this page names the file it was read from. The source column is the last column of each table. If a requirement is not in a file, it is not on this page.

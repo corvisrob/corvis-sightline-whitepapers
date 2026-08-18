@@ -1,5 +1,3 @@
-# Data Model
-
 Prism normalises asset data from every source into one schema hierarchy. This document describes the hierarchy and tells you where a given field belongs.
 
 ## Why the model has tiers

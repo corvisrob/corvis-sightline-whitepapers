@@ -1,5 +1,3 @@
-# Jira Assets Connector
-
 Collects asset data from Jira issues and normalizes to the `BaseAsset` schema.
 
 ## Overview

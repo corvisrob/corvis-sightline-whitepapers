@@ -1,5 +1,3 @@
-# Storage backends
-
 Sightline Prism writes its records to one of two backends: **MongoDB**, or a **local JSON store**. You choose with one environment variable.
 
 Choose before you collect anything. The choice is easy to change and the consequence is not, for the reason in [The two backends do not share data](#the-two-backends-do-not-share-data).

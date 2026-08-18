@@ -1,5 +1,3 @@
-# Schema versions and rule migration
-
 An upgrade raises two questions about the data you already hold: do my records survive, and do my rules survive? They have different answers.
 
 Read [Version compatibility](/docs/prism/upgrade/compatibility) for the product-version side of the same question.

@@ -1,5 +1,3 @@
-# Connectors
-
 Prism ships ten connectors. Eight collect from real systems. Two are test fixtures.
 
 ## What each connector collects

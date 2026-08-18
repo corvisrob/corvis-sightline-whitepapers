@@ -1,5 +1,3 @@
-# Installing Prism
-
 The Prism installer creates a [runtime instance](/docs/prism/install/runtime-instance). It does not install Prism into the code checkout, and it does not install every package.
 
 **A node gets only the packages it needs.** A collector node gets the connectors you name. A central node also gets the operator CLI and the sync engine.

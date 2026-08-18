@@ -1,5 +1,3 @@
-# Installing the CLI
-
 Building the operator CLI has one requirement that no other Sightline Prism component has: **two code checkouts, side by side, installed in a set order**.
 
 Read this page from the top. Nearly every failure in this install traces back to the layout or the order, and the errors they produce do not name either one.

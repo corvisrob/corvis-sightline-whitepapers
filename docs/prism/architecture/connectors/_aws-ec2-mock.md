@@ -1,5 +1,3 @@
-# AWS EC2 Mock Connector
-
 **This connector is a test fixture. It emits synthetic data, needs no credentials, and connects to nothing.** Use it to exercise the collection and sync pipeline before you point a real connector at a live system.
 
 Prism does not ship an AWS EC2 integration. This fixture produces records shaped like EC2 instances so you can test the pipeline; it does not collect from AWS.

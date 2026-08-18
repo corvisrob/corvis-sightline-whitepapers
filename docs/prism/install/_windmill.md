@@ -1,5 +1,3 @@
-# Installing the Windmill layer
-
 The Windmill layer runs the collectors and the review app inside a Windmill workspace. It installs into a Windmill repository directory, not into a Prism [runtime instance](/docs/prism/install/runtime-instance).
 
 Read [Prerequisites](/docs/prism/install/prerequisites) before you start. For what this layer is, read [Windmill layer](/docs/prism/architecture/windmill).

@@ -1,5 +1,3 @@
-# On-Premises CMDB Agent Connector (PowerShell)
-
 Collects local system information from the machine it runs on and pushes an `AssetComputer` snapshot straight to MongoDB — entirely in PowerShell, no Python or Node.js required.
 
 Native counterpart to the [`local-host-python`](/docs/prism/architecture/connectors/local-host-python) connector: same data, same `AssetComputer` schema — just collected via `Get-CimInstance` instead of `psutil`, and written to its own `snapshots_local-host-powershell` collection. Use this variant on Windows machines where you don't want to install Python.

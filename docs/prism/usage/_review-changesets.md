@@ -1,5 +1,3 @@
-# Review and apply changesets
-
 A sync rule in `review` mode leaves its proposed changes **pending**. Reviewing them is how those changes become real.
 
 **Start in your [runtime instance](/docs/prism/install/runtime-instance).**

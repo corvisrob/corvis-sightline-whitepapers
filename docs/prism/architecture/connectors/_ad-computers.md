@@ -1,5 +1,3 @@
-# AD Computers Connector
-
 Collects computer objects from Active Directory and pushes snapshots to MongoDB — entirely in PowerShell, no Node.js required.
 
 ## Architecture

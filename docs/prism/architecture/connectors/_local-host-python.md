@@ -1,5 +1,3 @@
-# On-Premises CMDB Agent Connector (Python)
-
 Collects local system information from the machine it runs on and normalizes it to the `AssetComputer` schema.
 
 Python implementation — requires Python 3.8+ and `psutil`. For Windows machines where Python isn't available, see the native [`local-host-powershell`](/docs/prism/architecture/connectors/local-host-powershell) connector, which collects the same data via `Get-CimInstance` and needs only PowerShell + the `Mdbc` module.

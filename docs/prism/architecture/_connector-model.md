@@ -1,5 +1,3 @@
-# Connector Model
-
 A connector reads one type of source and normalises what it finds into a Prism schema. This document describes the connector model and the manifest that turns connector code into a running instance.
 
 ## Code against instance

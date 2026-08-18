@@ -1,5 +1,3 @@
-# Rollback
-
 An upgrade sometimes has to be undone. The three products do not answer that the same way, and one of them does not answer it at all.
 
 **Read this page before you upgrade, not after.** One of the three has no supported rollback, and knowing that in advance changes how you sequence the upgrade.

@@ -1,5 +1,3 @@
-# Cylance Connector
-
 Collects endpoint devices from Cylance, now BlackBerry Aurora, and produces `AssetComputer` records.
 
 This is a production connector. It calls the vendor API with real credentials.

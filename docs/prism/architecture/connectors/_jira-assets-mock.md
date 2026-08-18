@@ -1,5 +1,3 @@
-# Jira Assets Mock Connector
-
 **This connector is a test fixture. It emits synthetic data, needs no credentials, and connects to nothing.** Use it to exercise the collection and sync pipeline before you point a real connector at a live system.
 
 For collection from a real Jira instance, use the [`jira-assets`](/docs/prism/architecture/connectors/jira-assets) connector.

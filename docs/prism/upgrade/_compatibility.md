@@ -1,5 +1,3 @@
-# Version compatibility
-
 Sightline Prism, the operator CLI and the Windmill layer release on their own cadences. They are not independent of each other.
 
 **Read this page before you upgrade any of the three.** An upgrade that moves one product without the others can produce a combination nobody has run.

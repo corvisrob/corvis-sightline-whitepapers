@@ -1,5 +1,3 @@
-# Spreadsheet Connector
-
 Imports asset data from Excel (`.xlsx`) files using a JSON mapping configuration, with a YAML intermediate file for inspection.
 
 ## Data Flow

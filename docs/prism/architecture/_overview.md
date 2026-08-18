@@ -1,5 +1,3 @@
-# Architecture Overview
-
 Sightline Prism collects asset data from many sources, normalises it to a common schema, and merges it into one consolidated view. This document describes the pipeline, the three products that make it up, and where each one runs.
 
 ## The pipeline

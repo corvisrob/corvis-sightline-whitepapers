@@ -1,5 +1,3 @@
-# The review app
-
 The review app is the browser interface to the same operations the operator CLI provides. It runs in your Windmill workspace.
 
 **It mirrors the review TUI entry for entry.** The same six operations, the same decisions, the same effects on your data.

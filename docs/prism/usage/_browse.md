@@ -1,5 +1,3 @@
-# Browse datasets and changesets
-
 Two browsing workflows answer the same question from different ends: **what happened to this data?**
 
 Browse changesets to see what a sync proposed and what became of it. Browse a dataset to see what a record looks like now, and which source each of its values came from.

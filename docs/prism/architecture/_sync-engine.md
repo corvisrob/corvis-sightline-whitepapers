@@ -1,5 +1,3 @@
-# Sync Engine
-
 The sync engine merges records from your connected datasets into one synthetic dataset. This document describes what the engine does and what it guarantees. It does not describe how the engine is built.
 
 Read this when you need to explain a result: why two records merged, why they did not, or why a value you expected did not change.

@@ -1,5 +1,3 @@
-# Run a write-back
-
 A write-back sends a value from a synthetic dataset back out to the source system it came from.
 
 **It is a two-location operation, and that is the whole difficulty.** One half runs centrally. The other half runs wherever the source is actually reachable. Running only the first half looks like nothing happened.

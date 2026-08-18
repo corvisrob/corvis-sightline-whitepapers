@@ -1,5 +1,3 @@
-# Run a collector
-
 A collector reads one source and transmits a snapshot into Prism. This page covers running one.
 
 **Start in your [runtime instance](/docs/prism/install/runtime-instance), not in the code checkout.** A collector resolves its manifest, its environment and its data directory against the current directory. Run it anywhere else and it finds none of them.

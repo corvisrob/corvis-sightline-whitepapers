@@ -1,5 +1,3 @@
-# CrowdStrike Falcon Connector
-
 Collects endpoint data from CrowdStrike Falcon API and normalizes it to the `AssetComputer` schema.
 
 ## Configuration

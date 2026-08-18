@@ -1,5 +1,3 @@
-# Upgrading the Windmill layer
-
 The Windmill layer upgrades through its own updater, `install/update.sh`, in the Windmill repository. The updater refreshes the layer's content from the current gold master and leaves your deployment state alone.
 
 Read [Version compatibility](/docs/prism/upgrade/compatibility) before you start.

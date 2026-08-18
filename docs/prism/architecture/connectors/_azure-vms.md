@@ -1,5 +1,3 @@
-# Azure VMs Connector
-
 Collects Azure Virtual Machine information and normalizes it to the `AssetComputer` schema.
 
 ## Configuration

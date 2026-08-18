@@ -1,5 +1,3 @@
-# Manage deferrals
-
 A **deferral** is a permanent suppression. You create one during review, and it stops a source input from ever being proposed again.
 
 **Start in your [runtime instance](/docs/prism/install/runtime-instance).**

@@ -1,5 +1,3 @@
-# Upgrading the CLI
-
 How you upgrade the operator CLI depends on how you installed it. The two paths are not variations of each other — one needs a second checkout and the other does not.
 
 Read [Version compatibility](/docs/prism/upgrade/compatibility) before you start. It tells you what the target version is coupled to.

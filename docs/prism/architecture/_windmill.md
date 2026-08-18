@@ -1,5 +1,3 @@
-# Windmill Layer
-
 Prism for Windmill schedules collections and presents the review operations in a browser. It is a separate repository, `sightline-prism-windmill`, deployed into a Windmill workspace.
 
 It adds orchestration and a browser interface. It does not add a second engine — it calls the same one.

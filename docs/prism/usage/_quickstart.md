@@ -1,5 +1,3 @@
-# First run
-
 This is the shortest path from an installed Prism to a merged record you decided yourself. **It needs no credentials.**
 
 Two connectors generate synthetic records instead of contacting a real system: `aws-ec2-mock` and `jira-assets-mock`. The whole cycle below runs on those.

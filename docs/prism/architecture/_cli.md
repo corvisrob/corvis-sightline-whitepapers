@@ -1,5 +1,3 @@
-# Operator CLI
-
 Prism CLI is the operator console. You run syncs from it, review changesets in it, and manage rules through it.
 
 It is a separate repository, `sightline-prism-cli`, and it depends on Prism in a way that is unusual for a package. Read the next section before you try to build it from source.
