@@ -1,0 +1,8 @@
+{
+  "label": "Usage",
+  "position": 2,
+  "link": {
+    "type": "generated-index",
+    "description": "What an operator does day to day: collect, sync, review, write back."
+  }
+}

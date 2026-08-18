@@ -129,8 +129,13 @@ const config: Config = {
           title: 'Knowledge Base',
           items: [
             {
+              // No trailing slash: the site sets trailingSlash: false, so the
+              // docs index is emitted as docs.html and served at /docs. A link
+              // to /docs/ looks for docs/index.html and 404s in production,
+              // which the build does not catch - onBrokenLinks validates the
+              // route, not the emitted file path.
               label: 'Overview',
-              to: '/docs/',
+              to: '/docs',
             },
             {
               label: 'Standards & framework alignment',
