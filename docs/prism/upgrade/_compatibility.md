@@ -54,6 +54,19 @@ The Windmill layer does not tag versions. It distributes a current gold master. 
 | The Windmill layer, against any Prism version | **Unverified** | The layer carries its own vendored build of the engine, SDK and connectors, and has no tagged release to pair against. |
 | The Windmill layer and a CLI, against one MongoDB store | **Unverified** | Both read the same store, and no test covers them running against it together. |
 
+## Breaking changes in 3.0.0
+
+Version 3.0.0 adds the PostgreSQL backend and moves storage behind a proper adapter layer. Two things that worked in 2.x stop working, and neither fails gradually.
+
+| What changed | What breaks | What to do |
+|---|---|---|
+| The storage module moved. `lib/mongo.js` no longer exists. | Any import of `@sightline/prism-connector-sdk/lib/mongo.js` fails to resolve. | Import the storage instance from `@sightline/prism-connector-sdk/lib/storage/index.js`, and `MongoStorage` from `.../lib/storage/mongo.js`. |
+| The debug admin helpers take a store, not a connection string. `mongo-admin.js` is now `storage-admin.js`. | `snapshotDatabase`, `restoreDatabase`, `listRules`, `deleteRules`, `inspectCollection`, `clearCollections`, `upsertRules` and `listSnapshots` no longer accept `(uri, dbName, …)`. | Pass a connected storage instance as the first argument in place of the two connection parameters. The names and return shapes are unchanged. |
+
+Both breaks surface at build time rather than at run time, which is deliberate: the Windmill layer's vendored bundle names every export it uses, so a rename fails the bundle build instead of producing an `undefined is not a function` on a worker.
+
+**An unrecognised `STORAGE_BACKEND` now stops the runtime at startup.** In 2.x, any value that was not `local` selected MongoDB, so a typo wrote to the wrong store and nothing reported it. If you have a node whose `STORAGE_BACKEND` has been quietly misspelled, it worked before and will refuse to start now — read [Storage backends](/docs/prism/install/storage-backends) and set the value you actually meant. Its records are in whichever store it has been writing to.
+
 ## Schema versions are a second axis
 
 Product versions are not the only compatibility question. The records already in your store carry their own version.

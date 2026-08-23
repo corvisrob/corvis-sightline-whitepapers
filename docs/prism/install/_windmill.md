@@ -2,11 +2,13 @@ The Windmill layer runs the collectors and the review app inside a Windmill work
 
 Read [Prerequisites](/docs/prism/install/prerequisites) before you start. For what this layer is, read [Windmill layer](/docs/prism/architecture/windmill).
 
-## The Windmill layer requires MongoDB
+## The Windmill layer runs on MongoDB or PostgreSQL
 
-**This layer does not support the local storage backend.** The installer sets up a MongoDB resource, and it accepts a MongoDB Atlas hostname only.
+**This layer does not support the local storage backend.** The local store is single-process, and Windmill runs concurrent workers. The installer sets up one storage resource and asks which of the two shared backends it names.
 
-If you tried Prism on a workstation with the local backend, that choice does not carry over. Read [Storage backends](/docs/prism/install/storage-backends) for what the two backends are and why they hold separate data.
+If you tried Prism on a workstation with the local backend, that choice does not carry over. Read [Storage backends](/docs/prism/install/storage-backends) for what the backends are and why they hold separate data.
+
+**A PostgreSQL server must be reachable from the Windmill workers.** That is a smaller condition than it sounds for a self-hosted Windmill sitting in the same network, and a real one for Windmill Cloud: the workers reach your server from the public internet, so a firewalled server must allow their egress. Windmill publishes no static egress IP list for its cloud, so ask their support for the worker group's external range, run a self-hosted worker inside your network, or use a private endpoint. A worker that cannot get through reports `connect ETIMEDOUT`, not a credentials error.
 
 ## Before you run the installer
 
@@ -47,7 +49,7 @@ That is the whole list. The installer takes no other flag.
 1. It checks for the `wmill` CLI, and stops when it is absent.
 2. It copies the layer's content into the target directory, unless content is already there.
 3. It runs `wmill init` to bind the directory to a workspace, unless it is already bound.
-4. It sets up the MongoDB resource, unless that resource is already set up.
+4. It sets up the storage resource, unless that resource is already set up.
 5. It sets up each connector you named, and skips any that is already set up.
 6. It regenerates the script and app metadata.
 7. It previews the deployment, and stops.
@@ -60,19 +62,36 @@ That is the whole list. The installer takes no other flag.
 
 The layer carries the compiled engine, connector SDK, shared review logic and connectors inside the directory it installs. It does not read a sibling `sightline-prism` checkout, and it does not need one. The operator CLI ships the same way — it compiles those packages into its own entry points — so neither component's *install* has a two-checkout requirement. Building either from source still does.
 
-## The MongoDB resource
+## The storage resource
 
-`install/setup-resource.mjs` sets up the connection to your store. The installer calls it, and it asks you for three values:
+`install/setup-resource.mjs` sets up the connection to your store. The installer calls it, and it asks which backend first — `mongo` or `postgres` — then only for that backend's values.
+
+For **MongoDB**:
 
 | Value | Type |
 |---|---|
 | The Atlas hostname | Plain text. It must be the full hostname, not the cluster code. |
 | The MongoDB username | Plain text |
 | The MongoDB password | Masked. It never appears on screen. |
-
-The script stores the password as a Windmill secret variable and writes the resource to `f/prism/mongodb`. The password is not written to a file in the repository.
+| The database name | Plain text. Defaults to `prism`. |
 
 The script rejects a hostname that is not an Atlas hostname, and asks again.
+
+For **PostgreSQL**:
+
+| Value | Type |
+|---|---|
+| The host | Plain text. There is no shape check: a Postgres server sits on no particular domain, so anything rejected here would be a guess. |
+| The port | Plain text. Defaults to `5432`. |
+| The database name | Plain text. Defaults to `prism`. |
+| The username | Plain text |
+| The password | Masked. It never appears on screen. |
+| `sslmode` | Plain text. Defaults to `require`. |
+| The schema | Plain text. Defaults to `public`. |
+
+**Leave `sslmode` at `require` unless your server genuinely does not use TLS.** A managed server refuses a plain connection and reports it as `no pg_hba.conf entry for host ...`, which reads like a firewall or permissions problem and is neither.
+
+Either way the script stores the password as a Windmill secret variable and writes the resource to `f/prism/storage`. The password is not written to a file in the repository. It also pushes the `prism_storage` resource type, so a first-ever install works against a workspace that has never seen it.
 
 ## Connectors
 
@@ -131,7 +150,7 @@ Confirm the resource setup completed, from inside the install directory:
 
 ```bash
 cd ../acme-prism-windmill
-ls wmill.yaml f/prism/mongodb.resource.yaml
+ls wmill.yaml f/prism/storage.resource.yaml
 ```
 
 **Expected output.** Both paths, each listed once. A missing `wmill.yaml` means `wmill init` did not complete, and the directory is not bound to a workspace.
@@ -160,7 +179,7 @@ Run the installer again against the same directory:
 ./install/install.sh --dir ../acme-prism-windmill --connectors cylance
 ```
 
-The installer detects the existing install and adds to it. It skips the workspace binding and the MongoDB resource, and sets up only the new connector.
+The installer detects the existing install and adds to it. It skips the workspace binding and the storage resource, and sets up only the new connector.
 
 To redo a connector's credentials, delete its resource file first. The installer skips a connector whose resource file is already present.
 

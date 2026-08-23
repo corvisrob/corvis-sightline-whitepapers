@@ -39,7 +39,7 @@ The operator CLI is the only component with a pinned version, and it is the high
 | Requirement | Why | Source |
 |---|---|---|
 | Node.js and npm | The installer stops without them. | `install/install.sh` |
-| A storage backend | Prism writes snapshots to MongoDB or to a local directory. | `packages/connector-sdk/src/lib/mongo.ts` |
+| A storage backend | Prism writes snapshots to MongoDB, to PostgreSQL, or to a local directory. | [Storage backends](/docs/prism/install/storage-backends) |
 
 Prism installs into a [runtime instance](/docs/prism/install/runtime-instance), not into its code checkout. The procedure is in [Installing Prism](/docs/prism/install/prism).
 

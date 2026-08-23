@@ -4,6 +4,23 @@ Read [Version compatibility](/docs/prism/upgrade/compatibility) before you start
 
 **Every path on this page is in the Windmill repository, not in the Prism one.**
 
+
+## Upgrading to 3.0.0 is a breaking change
+
+**Every script's first parameter changed.** It was `mongodb`, a Windmill built-in `mongodb` resource; it is now `storage`, a `prism_storage` resource at `f/prism/storage`. Until an install is migrated, its scripts have no resource to bind and the review app does not run.
+
+The updater does not do this for you, because it never touches your resources - that is what keeps your credentials through an upgrade.
+
+1. Create the new resource. Either run `node install/setup-resource.mjs storage <install-dir> <gold-master-dir>`, or lift your existing `f/prism/mongodb` value into a `prism_storage` resource at `f/prism/storage`. Lifting it keeps the `$var:` password reference, so you do not re-enter the secret.
+2. Push the resource type, then the resource, then the scripts, then the app - in that order. A script deployed before its resource exists has nothing to bind.
+3. Rebind any schedule or trigger that passed `mongodb`. The field is now `storage`.
+
+**The updater checks that you have done this.** An install with no `f/prism/storage.resource.yaml` is either un-migrated or has lost its storage resource, and refreshing one installs scripts whose first parameter is `storage` over a workspace that has nothing to bind them to. The updater stops on that check before touching a single file, names the migration, and changes nothing. `--dry-run` stops on it too, so a dry run cannot report clean on an install the real run would refuse.
+
+⛔ **Push per file** (`wmill script push <file>`). A whole-tree `wmill sync push` deletes anything in the workspace that is absent from your install directory, which usually includes scripts that only ever existed in the workspace.
+
+Read [Storage backends](/docs/prism/install/storage-backends) before choosing PostgreSQL: it is now a supported backend for this layer, and it must be reachable from the Windmill workers.
+
 ## Before you start
 
 The updater refreshes an **existing** install. It is not a first-time install.
@@ -28,7 +45,7 @@ That is the whole list. The updater takes no other flag.
 
 ## ⚠️ Run the dry run first
 
-**A dry run is available, and on this command it is not optional in practice.** Read [What the updater deletes](#what-the-updater-deletes) before you skip it.
+**A dry run is available and worth the minute it costs.** It is the only way to see what a release retires from your install before it goes — see [What the updater deletes](#what-the-updater-deletes).
 
 ```bash
 ./install/update.sh --dir ../acme-prism-windmill --dry-run
@@ -46,7 +63,7 @@ The updater replaces gold-master content and protects deployment-specific state.
 
 | Path | What it holds |
 |---|---|
-| `f/` | The review-app scripts and the deployed collector scripts |
+| `f/` | The review-app scripts, and the gold master's own collector script |
 | `windmill/` | The collector templates |
 | `vendor/` | The compiled engine, connector SDK, review logic and connectors |
 
@@ -58,8 +75,9 @@ The updater replaces gold-master content and protects deployment-specific state.
 |---|---|
 | `wmill.yaml` | The workspace binding |
 | `wmill-lock.yaml` | The deployment lock |
-| `f/prism/mongodb.resource.yaml` | Your MongoDB connection resource |
+| `f/prism/storage.resource.yaml` | Your storage connection resource (MongoDB or PostgreSQL) |
 | `f/prism/*_credentials.resource.yaml` | Your connector credential resources |
+| `f/prism/<connector>_collect.ts` | The deployed collector script of every connector set up in this install |
 | `u/<user>/` | Per-user content |
 
 Your credentials survive an upgrade. You do not re-enter them.
@@ -68,22 +86,21 @@ Your credentials survive an upgrade. You do not re-enter them.
 
 The refresh is a mirror, not a merge. Anything under `f/`, `windmill/` or `vendor/` that the gold master does not carry — and that is not on the preserved list above — **is deleted**.
 
-**This removes the deployed collector script for most connectors.**
+That is deliberate, and it is what the dry run is for: it is how a script this release retires leaves your install, and how the previous release's engine chunks leave `vendor/`.
 
-The gold master ships one collector script in `f/prism/`, for `jira-assets`. Every other connector's script was written into your install by the installer, from a template. Those scripts are not in the gold master and are not on the preserved list, so the refresh deletes them.
+**Your own deployment state is not in that set.** The updater does not work from a fixed list of files to spare. It reads the install: your storage resource, every connector credential resource, and every collector script the installer put there. Set a connector up and it keeps both halves — the credentials and the script they drive — through every later refresh.
 
-| Connector | Its `f/prism/<name>_collect.ts` after an update |
-|---|---|
-| `jira-assets` | Kept — the gold master carries it |
-| `crowdstrike`, `cylance`, `azure-vms` | **Deleted** |
+A collector script the gold master does not ship is always yours, so it is always kept — including one left behind by a connector setup you interrupted before entering its credentials. The one collector the gold master does ship, for `jira-assets`, is kept when you have that connector set up here and refreshed from the gold master when you do not.
 
-The credential resource survives, and the script it drives does not. The two come apart.
+### Restoring a collector script an older updater deleted
 
-### Restoring a deleted collector script
+Earlier updaters spared a fixed list of files that named neither the collector scripts nor, after the 3.0.0 rename, the storage resource. An upgrade run by one of those deleted the collector script of every connector except `jira-assets`, leaving its credential resource behind — and could delete `f/prism/storage.resource.yaml` outright.
 
-**Re-running the installer does not restore it.** The installer skips any connector whose credential resource file is already present. That file survived the update, so the connector is skipped and the script stays missing.
+If [Verify the upgrade](#verify-the-upgrade) finds a credential resource with no matching collector script, this is why.
 
-To restore it, remove the credential resource first, then re-run the installer for that connector and enter its credentials again:
+**Re-running the installer does not restore it.** The installer skips any connector whose credential resource file is already present. That file survived, so the connector is skipped and the script stays missing.
+
+Remove the credential resource first, then re-run the installer for that connector and enter its credentials again:
 
 ```bash
 cd ../acme-prism-windmill
@@ -92,7 +109,7 @@ cd ../sightline-prism-windmill
 ./install/install.sh --dir ../acme-prism-windmill --connectors <connector>
 ```
 
-**Plan for this before you upgrade.** Note which connectors you run and have their credentials to hand. The dry run lists the deletions, so run it first and you will know exactly which connectors are affected.
+A missing `f/prism/storage.resource.yaml` is recovered the same way the [3.0.0 migration](#upgrading-to-300-is-a-breaking-change) creates one. The updater now refuses to run at all until it is back.
 
 ## The update does not deploy
 
@@ -119,7 +136,7 @@ From inside the install directory, confirm the deployment state survived:
 
 ```bash
 cd ../acme-prism-windmill
-ls wmill.yaml f/prism/mongodb.resource.yaml
+ls wmill.yaml f/prism/storage.resource.yaml
 ```
 
 **Expected output.** Both paths, each listed once. A missing `wmill.yaml` means the updater did not run against an existing install.
@@ -130,7 +147,7 @@ Then confirm each connector you run still has both halves — its credential res
 ls f/prism/*_credentials.resource.yaml f/prism/*_collect.ts
 ```
 
-**Expected output.** A matching pair for each connector you run. A credential resource with no matching collect script is the deletion described above. Restore it before you deploy.
+**Expected output.** A matching pair for each connector you run. A credential resource with no matching collect script means an older updater deleted it — [restore it](#restoring-a-collector-script-an-older-updater-deleted) before you deploy.
 
 ## Where to go next
 
