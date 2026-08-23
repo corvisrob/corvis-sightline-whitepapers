@@ -10,7 +10,7 @@ flowchart TD
     B --> C[Schema validation<br/>each record checked against its schema]
     C --> D[Snapshots<br/>one connected dataset per source]
     D --> E[Sync engine<br/>merges by rule and priority]
-    E --> F[Synthetic dataset<br/>consolidated, with per-field provenance]
+    E --> F[Consolidated dataset<br/>merged, with per-field provenance]
 ```
 
 1. **Data sources.** A source is a cloud API, an on-premise agent, or a file. Prism does not change the source.
@@ -18,7 +18,7 @@ flowchart TD
 3. **Schema validation.** Prism validates every record before it stores the record. An invalid record does not enter the pipeline silently.
 4. **Snapshots.** Prism stores each collection as a snapshot in a connected dataset. One source has one connected dataset. A connected dataset is read-only to the sync engine.
 5. **Sync engine.** The engine applies your sync rules. It matches records across sources, resolves conflicts by priority, and produces a changeset.
-6. **Synthetic dataset.** The merged result. Each field records its source, its priority and its timestamp, so you can audit every value.
+6. **Consolidated dataset.** The merged result. Each field records its source, its priority and its timestamp, so you can audit every value.
 
 The pipeline is not one program. Stages 1 to 4 run wherever the source is reachable. Stages 5 and 6 run centrally.
 

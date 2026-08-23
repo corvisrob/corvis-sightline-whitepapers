@@ -63,7 +63,7 @@ A source can propose an asset that Prism does not yet hold. `l` opens a picker s
 
 `enter` does **not** apply. It opens a confirmation step, which reports what you decided. `y` commits and `n` returns you to the list.
 
-Only then are approved changes written into the synthetic dataset and the changeset persisted.
+Only then are approved changes written into the consolidated dataset and the changeset persisted.
 
 **Applying is the point of no return for that pass.** Anything you approved is written. To undo it afterwards you roll the changeset back. That is a data operation, and a different thing from a version rollback — see [Browse datasets and changesets](/docs/prism/usage/browse).
 

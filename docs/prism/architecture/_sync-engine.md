@@ -1,4 +1,4 @@
-The sync engine merges records from your connected datasets into one synthetic dataset. This document describes what the engine does and what it guarantees. It does not describe how the engine is built.
+The sync engine merges records from your connected datasets into one consolidated dataset. This document describes what the engine does and what it guarantees. It does not describe how the engine is built.
 
 Read this when you need to explain a result: why two records merged, why they did not, or why a value you expected did not change.
 
@@ -115,7 +115,7 @@ This is the safe default, and it is deliberate. Automatic creation on every unma
 
 ## Provenance: why you can audit a value
 
-Every field in a synthetic dataset records the source that supplied it, the priority that source held, and when it was last updated.
+Every field in a consolidated dataset records the source that supplied it, the priority that source held, and when it was last updated.
 
 This is the property that makes a merge auditable. For any value in the consolidated view, you can answer: where did this come from, why did it win, and when.
 

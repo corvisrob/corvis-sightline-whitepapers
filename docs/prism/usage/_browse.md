@@ -43,7 +43,7 @@ Opening a record is worth doing because of what the record carries beside each v
 
 A merged record does not just hold a value. For each field it also holds **the source that supplied it and that source's priority**. Both appear next to the field, as a source name and a priority number. A field no source has claimed yet is marked as new.
 
-That is what makes a synthetic dataset auditable. When a value looks wrong, the record names the connector that proposed it and how strongly. That is usually enough to choose between fixing the source, changing a priority, and declining the value at review.
+That is what makes a consolidated dataset auditable. When a value looks wrong, the record names the connector that proposed it and how strongly. That is usually enough to choose between fixing the source, changing a priority, and declining the value at review.
 
 [Data model](/docs/prism/architecture/data-model) explains how provenance is stored. This page is about reading it.
 

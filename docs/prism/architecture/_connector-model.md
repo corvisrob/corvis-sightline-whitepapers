@@ -73,7 +73,7 @@ That registration is also why a rule pointing at a table no source has ever tran
 
 ## What a connector does not do
 
-A connector does not merge. It does not resolve conflicts, it does not decide priority, and it does not write to the synthetic dataset. It collects, normalises and transmits.
+A connector does not merge. It does not resolve conflicts, it does not decide priority, and it does not write to the consolidated dataset. It collects, normalises and transmits.
 
 The one exception is write-back, where a connector drains the outbox and writes to its own source. Even there the connector does not decide *what* to write — the engine decided that. The connector performs the write, because it is the only component with connectivity and credentials for that source. See [Sync engine](/docs/prism/architecture/sync-engine).
 

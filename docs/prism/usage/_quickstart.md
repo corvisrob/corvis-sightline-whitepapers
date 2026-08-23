@@ -25,7 +25,7 @@ You now have records from two sources that do not agree with each other. That di
 
 ## Step 2 — Merge them
 
-Run a sync rule whose target is a synthetic dataset.
+Run a sync rule whose target is a consolidated dataset.
 
 ```bash
 npx prism-sync <rule-id>
@@ -57,7 +57,7 @@ The full procedure, including what decline does that reject does not, is in [Rev
 npx prism-review
 ```
 
-Choose **Browse a dataset's records**, pick your synthetic dataset, and open a record.
+Choose **Browse a dataset's records**, pick your consolidated dataset, and open a record.
 
 **Expected output.** The merged record, with each field showing the source that supplied its value and that source's priority.
 

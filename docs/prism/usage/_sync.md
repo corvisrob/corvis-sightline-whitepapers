@@ -1,4 +1,4 @@
-A sync rule merges records from a connected dataset into a synthetic dataset. Running one is a single command. Understanding what it produced is the part worth reading.
+A sync rule merges records from a connected dataset into a consolidated dataset. Running one is a single command. Understanding what it produced is the part worth reading.
 
 **Start in your [runtime instance](/docs/prism/install/runtime-instance).** The sync command resolves its rule against the current directory.
 
@@ -46,7 +46,7 @@ Priority still governs an `auto` change. A lower-priority source does not overwr
 
 There is one rule shape for both directions. A reverse rule is run by the same command as a sync rule.
 
-**The direction comes from where the target table lives.** A local target merges into a synthetic dataset. A remote target enqueues writes to that target's outbox instead, for an edge to drain later.
+**The direction comes from where the target table lives.** A local target merges into a consolidated dataset. A remote target enqueues writes to that target's outbox instead, for an edge to drain later.
 
 So you do not choose a direction when you run a rule, and there is no separate reverse-sync command. You choose a target when you write the rule. [Run a write-back](/docs/prism/usage/write-back) covers what happens after a remote target is enqueued.
 

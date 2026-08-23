@@ -1,4 +1,4 @@
-This page sets up one pipeline from end to end. Sightline Prism collects CrowdStrike endpoints into a synthetic dataset. It writes those records out to Jira as CMDB issues. It reads Jira back, so the two stay linked.
+This page sets up one pipeline from end to end. Sightline Prism collects CrowdStrike endpoints into a consolidated dataset. It writes those records out to Jira as CMDB issues. It reads Jira back, so the two stay linked.
 
 The page assembles the other install pages into one order. It adds what is specific to this pipeline, which is the three rule mappings. Where another page owns a step, this page links to it.
 
@@ -9,7 +9,7 @@ For a rehearsal that needs no credentials, use the synthetic fixture demo in the
 ```mermaid
 flowchart LR
   CS["CrowdStrike"] -->|collect| INBOX[("inbox")]
-  INBOX -->|crowdstrike-sync| CONS[("synthetic dataset")]
+  INBOX -->|crowdstrike-sync| CONS[("consolidated dataset")]
   JIRA["Jira issues"] -->|jira-assets-sync| CONS
   CONS -->|"technical-to-jira<br/>(mirror creates the missing ones)"| JIRA
 ```
@@ -18,9 +18,9 @@ The round trip takes three rules.
 
 | Rule | Direction | What it decides |
 |---|---|---|
-| `crowdstrike-sync` | CrowdStrike to the synthetic dataset | Which agent-reported fields land, and at what priority |
-| `jira-assets-sync` | Jira to the synthetic dataset | Which CMDB fields land, and how far below CrowdStrike they sit |
-| `technical-to-jira` | The synthetic dataset to Jira | Which merged values go back, and whether an unlinked host gets an issue |
+| `crowdstrike-sync` | CrowdStrike to the consolidated dataset | Which agent-reported fields land, and at what priority |
+| `jira-assets-sync` | Jira to the consolidated dataset | Which CMDB fields land, and how far below CrowdStrike they sit |
+| `technical-to-jira` | The consolidated dataset to Jira | Which merged values go back, and whether an unlinked host gets an issue |
 
 The second and third rules make a loop rather than two one-way feeds. Jira's static entries arrive at a low priority. CrowdStrike's live values win. The winner then goes back out over Jira's stale copy.
 
@@ -199,8 +199,8 @@ The grid columns follow the rule's direction.
 
 | Direction | Columns |
 |---|---|
-| Sync, into the synthetic dataset | Source field, Target field, Mode, Priority, Expression, Condition |
-| Reverse, out of the synthetic dataset | Master field, Source field, Expression, Condition |
+| Sync, into the consolidated dataset | Source field, Target field, Mode, Priority, Expression, Condition |
+| Reverse, out of the consolidated dataset | Master field, Source field, Expression, Condition |
 
 A reverse rule shows no Mode and no Priority. It merges nothing. It writes one value to one place.
 
@@ -216,7 +216,7 @@ Reserve `review` for fields where a wrong value is expensive, such as security p
 
 > An approval overrides priority. A person who approves a lower-priority proposal replaces a higher-priority applied value.
 
-### 4a. CrowdStrike to the synthetic dataset
+### 4a. CrowdStrike to the consolidated dataset
 
 | Header field | Value |
 |---|---|
@@ -252,7 +252,7 @@ Note the shape of a source field. It uses dots, and it indexes an array by posit
 
 `reconcilePresence` stays `false` here on purpose. Set it to `true` and the engine proposes a decommission for any host absent from a run. You want that behaviour later. You do not want it while you still confirm that the collector sees the whole fleet.
 
-### 4b. Jira to the synthetic dataset
+### 4b. Jira to the consolidated dataset
 
 | Header field | Value |
 |---|---|
@@ -279,7 +279,7 @@ Note the shape of a source field. It uses dots, and it indexes an array by posit
 
 The asymmetry is deliberate. Jira wins on the business facts that only Jira holds. CrowdStrike wins on anything an agent observes live.
 
-### 4c. The synthetic dataset to Jira
+### 4c. The consolidated dataset to Jira
 
 | Header field | Value |
 |---|---|
@@ -331,7 +331,7 @@ The editor is one way to create a rule. To load rule files in bulk, see [Create 
 3. Review the changeset. See [Review and apply changesets](/docs/prism/usage/review-changesets).
 4. Repeat steps 1 to 3 for `jira-assets-sync`, once Jira holds issues to read.
 
-On a first run, every host arrives as a new-asset proposal. The engine writes nothing to the synthetic dataset until a person approves it.
+On a first run, every host arrives as a new-asset proposal. The engine writes nothing to the consolidated dataset until a person approves it.
 
 ### Outbound
 
