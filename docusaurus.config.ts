@@ -32,7 +32,13 @@ const config: Config = {
   // tool's lint, so this is 'mdx' and must stay 'mdx'.
   markdown: {
     format: 'mdx',
+    // Renders ```mermaid fences as diagrams. Reserved for genuine flow and
+    // relationship diagrams; a directory tree stays as a plain fence, because
+    // the tree convention is copy-pasteable and a graph of one is not.
+    mermaid: true,
   },
+
+  themes: ['@docusaurus/theme-mermaid'],
 
   i18n: {
     defaultLocale: 'en',
