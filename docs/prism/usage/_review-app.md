@@ -31,6 +31,8 @@ The decisions and their effects are identical. Two practical differences are wor
 
 **There is no starting directory.** The CLI procedures open by telling you to change into a runtime instance. The app is already bound to a workspace and its store, so that step does not apply.
 
+**Creating a rule does not ask which kind.** [Create and edit rules](/docs/prism/usage/manage-rules) says `n` asks for sync or reverse before the form. In the app there is no such step: pick the target dataset and the direction follows it, exactly as it does at run time — a local target merges, a remote one pushes. The app only asks when it cannot tell, which means the target is not in the table registry. The rule you end up with is the same either way.
+
 Everything else in the linked procedures reads the same in either interface.
 
 ## Where to go next
