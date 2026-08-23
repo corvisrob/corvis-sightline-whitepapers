@@ -41,11 +41,11 @@ Two things about that configuration are worth knowing before you deploy.
 
 **Resources are synchronised; resource types and secrets are not.** That split is intentional. It lets you version the shape of your deployment without versioning what is in it.
 
-## It requires MongoDB
+## It requires a shared backend
 
-**The Windmill deployment always uses MongoDB.** The local JSON store is a single-process backend intended for a workstation, the CLI and standalone use. It is not an option here.
+**The Windmill deployment uses MongoDB or PostgreSQL.** Its storage resource names one of the two and carries that backend's connection details. The local JSON store is a single-process backend intended for a workstation, the CLI and standalone use. It is not an option here.
 
-If you tried Prism on a workstation with the local store, that data does not carry over. The two backends do not share data. See [Overview](/docs/prism/architecture/overview).
+If you tried Prism on a workstation with the local store, that data does not carry over. The backends do not share data. See [Overview](/docs/prism/architecture/overview).
 
 ## The review app and the review TUI
 

@@ -57,18 +57,19 @@ If you run an operational command in the code checkout, it does not find the env
 
 ## Storage backends
 
-Prism stores data in one of two backends. The `STORAGE_BACKEND` environment variable selects the backend.
+Prism stores data in one of three backends. The `STORAGE_BACKEND` environment variable selects the backend.
 
 | Backend | Value | Notes |
 |---|---|---|
 | MongoDB | `mongo` | The default. Needs a connection URI and a database name. |
+| PostgreSQL | `postgres` | One table per collection, created on first write. Safe for more than one process. |
 | Local JSON store | `local` | One file per collection, in the instance data directory. Single-process. |
 
-Every connector, the sync engine and the CLI work against either backend. No code changes.
+Every connector, the sync engine and the CLI work against any of them. No code changes.
 
-**The two backends do not share data.** A runtime instance that you move from the local store to MongoDB starts empty. Its collected data stays in the local store, and Prism does not migrate it for you. Decide the backend before you collect data you want to keep.
+**The backends do not share data.** A runtime instance that you move from the local store to MongoDB starts empty. Its collected data stays in the local store, and Prism does not migrate it for you. Decide the backend before you collect data you want to keep.
 
-The Windmill deployment always uses MongoDB. A local-store instance on a workstation does not carry over to it.
+The Windmill deployment uses MongoDB or PostgreSQL, never the local store. A local-store instance on a workstation does not carry over to it.
 
 ## Where to go next
 
