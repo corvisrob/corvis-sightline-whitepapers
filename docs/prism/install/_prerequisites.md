@@ -52,8 +52,6 @@ The operator CLI adds nothing beyond Node and npm. The engine and its supporting
 |---|---|---|
 | Node 24 | The CLI repository pins the version. | `sightline-prism-cli/.nvmrc` |
 
-Building the CLI from source is a different matter, and it needs a second code checkout. That is a contributor concern, and the `CONTRIBUTING.md` file in the source repository covers it.
-
 ## Windmill-hosted Prism
 
 | Requirement | Why | Source |

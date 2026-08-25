@@ -18,8 +18,6 @@ your-parent-directory/
 
 **One install directory can create many runtime instances.** A collector node and a central node are two instances built from the same archive.
 
-A contributor who works from a `sightline-prism` **code checkout** meets the same rule. The checkout is where the code lives, and it is never where a command runs.
-
 ## What the installer puts in a runtime instance
 
 | Item | What it holds |
@@ -89,8 +87,6 @@ The install directory holds `install.mjs` and the archive. It has no `.env`, no 
 | Ran a collector with the local backend | A new, empty `.data` directory appears beside the installer. |
 
 The last one is the most confusing. Nothing failed. The collector wrote a real snapshot to a real store — the wrong one. Your instance's data is untouched, and it looks like the collection did nothing.
-
-A contributor working from a code checkout meets all four the same way, and for the same reason.
 
 If a command behaves as though your configuration does not exist, check the working directory before you check anything else.
 

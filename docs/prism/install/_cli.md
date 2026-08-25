@@ -47,12 +47,6 @@ The CLI runs from a runtime instance, not from the directory the installer ran i
 
 One consequence matters for write-back: `prism-drain` must run somewhere the source system is reachable. That is often not the machine that runs the sync.
 
-## Building it from source
-
-A contributor who builds the CLI has one requirement no other component has: two code checkouts, side by side, in a set order. That is a contributor concern, and the `CONTRIBUTING.md` file in the source repository documents it.
-
-Nothing on this page needs it.
-
 ## Where to go next
 
 | Question | Document |

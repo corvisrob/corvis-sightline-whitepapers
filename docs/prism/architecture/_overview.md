@@ -82,8 +82,6 @@ You can create more than one runtime instance from one install directory. Each i
 
 If you run an operational command anywhere but the instance, it does not find the environment file or the data directory. The failure does not name the cause.
 
-A contributor working from a `sightline-prism` **code checkout** meets the same rule: the checkout holds code, and it is never where a command runs.
-
 ## Storage backends
 
 Prism stores data in one of three backends. The `STORAGE_BACKEND` environment variable selects the backend.
