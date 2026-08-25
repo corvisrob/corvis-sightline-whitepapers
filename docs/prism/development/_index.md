@@ -58,19 +58,16 @@ check the working directory before anything else.
 
 ## Node version
 
-The three repositories do not state one Node version between them.
+Develop on Node 24.
 
-| Component | What its own file states | Source |
-|---|---|---|
-| Prism | No minimum. No `engines` field. | `package.json` |
-| Operator CLI | Node 24. | `sightline-prism-cli/.nvmrc` |
-| Windmill-hosted Prism | No minimum. No `engines` field. | `sightline-prism-windmill/package.json` |
+`sightline-prism-cli/.nvmrc` is the only version pin in the three repositories, and it
+is the highest figure any of them names. No repository declares an `engines` field.
 
-The installer adds two more figures, and they disagree: it names Node 20 when npm is
-absent, and it warns below major version 18. It fails on neither.
+The installer enforces nothing. It names Node 20 in its npm-missing message, and warns
+below major version 18. Neither figure fails the install.
 
-The operator CLI is the only component with a pinned version, and it is the highest
-figure here. Install Node 24 if you build the CLI.
+⚠️ Those three figures are inconsistent, and nothing reconciles them. Change one and
+check the others.
 
 ## Where to go next
 

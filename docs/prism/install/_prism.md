@@ -1,6 +1,6 @@
-An install is two files in one directory, and one command. There is no repository to clone, nothing to build, and no registry to reach.
+An install is two files in one directory, and one command.
 
-The installer creates a [runtime instance](/docs/prism/install/runtime-instance). It does not install Prism into the directory it runs from, and it does not install every package.
+The installer creates a [runtime instance](/docs/prism/install/runtime-instance), and installs Prism there rather than in the directory it runs from.
 
 **A node gets only the packages it needs.** A collector node gets the connectors you name. A central node also gets the operator CLI and the sync engine.
 
@@ -15,7 +15,7 @@ Two files. Put them in the same directory.
 | `install.mjs` | The installer. One script, for macOS, Linux and Windows. |
 | `sightline-prism-latest.tar.gz` | Every package a node can need, in one archive. |
 
-The installer reads the archive from its own directory. It downloads nothing, and it builds nothing. Without the archive beside it, the installer stops and names the file it expected.
+The installer reads the archive from its own directory. Without it, the installer stops and names the file it expected.
 
 **There is one installer, and it runs the same way everywhere.** You run it with Node, which the install needs in any case:
 
