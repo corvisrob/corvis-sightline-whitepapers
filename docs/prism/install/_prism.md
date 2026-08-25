@@ -45,19 +45,15 @@ node install.mjs --dir ../acme-central --role central --connectors spreadsheet
 
 The installer takes three options.
 
-| Flag | What it does | Default |
-|---|---|---|
-| `--dir` | Where the runtime instance goes. | `./prism-run` |
-| `--role` | What the node is for: `collector`, `central` or `both`. | `collector` |
-| `--connectors` | The connectors to install, as a comma-separated list. | none |
+| Flag | What it does | Default | Rejected value |
+|---|---|---|---|
+| `--dir` | Where the runtime instance goes. | `./prism-run` | — |
+| `--role` | What the node is for: `collector`, `central` or `both`. | `collector` | Anything else. |
+| `--connectors` | The connectors to install, as a comma-separated list. | none | A name the archive does not hold. An empty list when `--role` is `collector`, which would install nothing. |
 
 `-h` or `--help` prints the usage and stops.
 
-**Name a role the installer knows.** A value outside `collector`, `central` and `both` stops the install. A typed mistake therefore fails, rather than quietly giving you a collector when you asked for a central node.
-
-**Name at least one thing to install.** The installer stops when `--connectors` is empty and `--role` is `collector`, because that combination installs nothing.
-
-**Name a connector the archive holds.** The installer stops when it cannot find one you named, and it lists what the archive does hold. A misspelt connector name fails the install rather than producing a node without its collector.
+A rejected value stops the install before it writes anything. Where the name is a connector, the installer lists the ones the archive holds.
 
 ## What the installer does
 
