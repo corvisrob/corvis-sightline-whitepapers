@@ -1,6 +1,6 @@
 {
   "label": "Upgrade",
-  "position": 3,
+  "position": 4,
   "link": {
     "type": "generated-index",
     "description": "Move between versions, migrate schemas and rules, and roll back."
