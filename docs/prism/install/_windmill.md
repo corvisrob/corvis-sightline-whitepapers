@@ -8,7 +8,7 @@ This is the other hosting of the same product, not a second product. Read [Prere
 
 If you tried Prism on a workstation with the local backend, that choice does not carry over. Read [Storage backends](/docs/prism/install/storage-backends) for what the backends are and why they hold separate data.
 
-**A PostgreSQL server must be reachable from the Windmill workers.** For a self-hosted Windmill in the same network, that condition is a small one. For Windmill Cloud it is real: the workers reach your server from the public internet, so a firewalled server must allow their egress. Windmill publishes no static egress IP list for its cloud. Ask their support for the worker group's external range, run a self-hosted worker inside your network, or use a private endpoint. A worker that cannot get through reports `connect ETIMEDOUT`, not a credentials error.
+**The database must be reachable from the Windmill workers.** For a self-hosted Windmill in the same network, that condition is a small one. For Windmill Cloud it is real: the workers reach your database from the public internet. A firewalled PostgreSQL server must allow their egress, and an Atlas cluster must carry their addresses in its IP access list. Windmill publishes no static egress IP list for its cloud. Ask their support for the worker group's external range, run a self-hosted worker inside your network, or use a private endpoint. A worker that cannot get through reports `connect ETIMEDOUT`, not a credentials error.
 
 ## Before you run the installer
 
@@ -16,7 +16,7 @@ You need three things beyond the [prerequisites](/docs/prism/install/prerequisit
 
 1. A Windmill workspace, created in the Windmill user interface.
 2. That workspace registered with your `wmill` CLI.
-3. A MongoDB Atlas cluster or a PostgreSQL server, with a username and a password.
+3. A MongoDB Atlas cluster or a PostgreSQL server, with a username and a password. The Windmill workers must reach it, so you may need to adjust the database's firewall or IP access list.
 
 The installer runs `wmill init`, which offers only the workspaces already registered with the CLI. When a workspace you just created is not listed, register it first:
 

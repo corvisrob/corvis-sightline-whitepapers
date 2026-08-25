@@ -57,7 +57,7 @@ The remaining flag, `--connectors`, chooses which connectors to install. [Instal
 
 Prism resolves its own files against the **current working directory**. It does not search upward, and it does not read a configuration file that points elsewhere.
 
-Three things resolve this way:
+Four things resolve this way:
 
 | What | How it resolves |
 |---|---|
