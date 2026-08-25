@@ -9,6 +9,8 @@ What must be present before you install Sightline Prism.
 | Node.js 24 | The operator CLI pins this version. Earlier versions from Node 20 run the installer. |
 | npm | It ships with Node.js. |
 
+Download Node.js from [the Node.js download page](https://nodejs.org/en/download/). The page has builds for Windows and Linux.
+
 The installer warns about an old Node.js version and then continues. It does not stop.
 
 ## Standalone Prism
@@ -28,6 +30,8 @@ Prism installs into a [runtime instance](/docs/prism/install/runtime-instance). 
 | A Windmill workspace | The installer runs `wmill init` against it. |
 | MongoDB Atlas, or a PostgreSQL server | The resource setup asks which one, then asks only for that backend's values. |
 | The install archive beside the installer | The installer reads it from its own directory. |
+
+Install the `wmill` CLI after you install Node.js. See [the Windmill CLI installation page](https://www.windmill.dev/docs/advanced/cli/installation) for the npm command.
 
 The procedure is in [Installing Windmill-hosted Prism](/docs/prism/install/windmill).
 

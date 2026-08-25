@@ -16,7 +16,7 @@ You need three things beyond the [prerequisites](/docs/prism/install/prerequisit
 
 1. A Windmill workspace, created in the Windmill user interface.
 2. That workspace registered with your `wmill` CLI.
-3. A MongoDB Atlas cluster, with a username and a password for it.
+3. A MongoDB Atlas cluster or a PostgreSQL server, with a username and a password.
 
 The installer runs `wmill init`, which offers only the workspaces already registered with the CLI. When a workspace you just created is not listed, register it first:
 

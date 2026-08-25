@@ -6,12 +6,12 @@ This recipe builds that loop on Windmill-hosted Prism over a PostgreSQL store.
 
 Four decisions shape an install of Prism. This recipe has made all four.
 
-| Choice | This recipe | Where another recipe changes it |
-|---|---|---|
-| Hosting | Windmill-hosted Prism | [Installing Standalone Prism](/docs/prism/install/prism) covers the other hosting |
-| Storage backend | PostgreSQL | [Storage backends](/docs/prism/install/storage-backends) covers MongoDB. This hosting does not accept the local JSON store |
-| Endpoint source | CrowdStrike Falcon | Cylance and Azure VMs ship in the same connector catalog. See [Installing Windmill-hosted Prism](/docs/prism/install/windmill) |
-| System of record | Jira | [Writing a connector](/docs/prism/architecture/writing-a-connector) covers a target that Prism does not already ship |
+| Choice | This recipe |
+|---|---|
+| Hosting | Windmill-hosted Prism |
+| Storage backend | PostgreSQL |
+| Endpoint source | CrowdStrike Falcon |
+| System of record | Jira |
 
 The recipe also fixes one name. Every source id below uses the instance `prod`, which gives `crowdstrike.prod` and `jira-assets.prod`.
 
@@ -133,7 +133,7 @@ Add each field to the project's screens. Jira accepts a field that is not on a s
 
 ### 3. Read the field ids back
 
-Jira assigns each `customfield_NNNNN` id itself. The numbers differ per site. You cannot choose them, so do not guess them.
+Jira assigns each `customfield_NNNNN` id itself, and the numbers differ per site. Read your own back with the API.
 
 ```bash
 curl -u you@example.com:$JIRA_API_TOKEN \
@@ -232,7 +232,7 @@ The grid columns follow the rule's direction.
 
 A reverse rule shows no Mode and no Priority. It merges nothing. It writes one value to one place.
 
-The target sets the direction. You do not choose it. A local target makes the rule merge. A remote source makes it push. The app asks only when the target is absent from the table registry. [The review app](/docs/prism/usage/review-app) and [Run a sync rule](/docs/prism/usage/sync) both cover this.
+The target sets the direction. A local target makes the rule merge, and a remote source makes it push. The app asks only when the target is absent from the table registry. [The review app](/docs/prism/usage/review-app) and [Run a sync rule](/docs/prism/usage/sync) both cover this.
 
 ### The two ideas the mappings encode
 
@@ -281,7 +281,7 @@ Then add the mappings.
 
 Note the shape of a source field. It uses dots, and it indexes an array by position, as in `network.0.ipAddress`. Vendor-specific values sit under `extendedData`.
 
-`reconcilePresence` stays `false` here on purpose. Set it to `true` and the engine proposes a decommission for any host absent from a run. You want that behaviour later. You do not want it while you still confirm that the collector sees the whole fleet.
+`reconcilePresence` stays `false` while you are still confirming that the collector sees the whole fleet. Set it to `true` and the engine proposes a decommission for any host absent from a run.
 
 ### 4b. Jira to the consolidated dataset
 
@@ -400,7 +400,7 @@ The review app offers a second route for a source no script can reach. **Complet
 
 1. A Jira issue exists for a CrowdStrike host. It holds the hostname, the IP address and the MAC address.
 2. The host's master record carries both sources. [Browse datasets and changesets](/docs/prism/usage/browse) shows the source and the priority for each field.
-3. Change that host's IP address by hand in Jira. Run `jira-assets-sync`. The engine shadows the change. It does not apply it, because CrowdStrike outranks Jira on the IP address.
+3. Change that host's IP address by hand in Jira. Run `jira-assets-sync`. The engine shadows the change, because CrowdStrike outranks Jira on the IP address.
 4. Run `technical-to-jira`. Drain the queue. Jira returns to the authoritative value.
 
 Step 3 is the one to watch. If the engine applies the change instead of shadowing it, the priorities in 4a and 4b do not match this recipe.
