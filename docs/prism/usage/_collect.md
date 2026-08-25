@@ -49,16 +49,6 @@ npx prism-collect-crowdstrike prod
 
 A missing credential fails the run and names the variable. That is the intended behaviour — a collector stops rather than running half-authenticated.
 
-### From a code checkout instead
-
-If you work in the code checkout rather than an installed instance, the commands differ. Use the npm scripts, and pass the instance after `--`:
-
-```bash
-npm run collect:crowdstrike -- prod
-```
-
-**These two forms are not interchangeable.** The instance form is what an operator runs. The checkout form is for development, and it resolves its data directory against the checkout.
-
 ## The PowerShell agents are different
 
 Two connectors run as PowerShell agents on the Windows machine being inventoried. They do not use the commands above, **and they do not work the same way as each other.**

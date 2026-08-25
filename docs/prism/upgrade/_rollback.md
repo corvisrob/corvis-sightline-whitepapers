@@ -49,7 +49,7 @@ node install.mjs --dir ../acme-central --role central --connectors crowdstrike
 
 **Expected result.** `npm ls @sightline/prism-cli` from the instance names the earlier version, and all five entry points resolve.
 
-The engine is compiled into the CLI, so returning the CLI returns the engine with it. A contributor rolling back a CLI they built from source has a different procedure, in the `CONTRIBUTING.md` file of the source repository.
+The engine is compiled into the CLI, so returning the CLI returns the engine with it. A contributor rolling back a CLI they built from source has a different procedure, in [Building the operator CLI](/docs/prism/development/building-the-cli).
 
 ## Windmill-hosted Prism
 

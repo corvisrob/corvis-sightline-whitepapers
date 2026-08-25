@@ -65,7 +65,7 @@ The product is built from three repositories. This is a build-time fact, and an 
 | `sightline-prism-cli` | The operator CLI |
 | `sightline-prism-windmill` | The Windmill layer: the collector scripts and the review app |
 
-The operator CLI and the Windmill layer each compile the engine and the connector SDK into their own release artifact. That is what lets an install carry no source and reach no registry. The `CONTRIBUTING.md` file in the source repository covers building them.
+The operator CLI and the Windmill layer each compile the engine and the connector SDK into their own release artifact. That is what lets an install carry no source and reach no registry. [Building the operator CLI](/docs/prism/development/building-the-cli) covers how that build works.
 
 A connector you write against the connector SDK runs under either hosting.
 

@@ -33,7 +33,7 @@ Then [verify the version](#verify-the-version).
 
 ## Building from source
 
-A contributor who upgrades a CLI they built from source has a different procedure. It needs two checkouts in a set order, and the `CONTRIBUTING.md` file in the source repository covers it.
+A contributor who upgrades a CLI they built from source has a different procedure. It needs two checkouts in a set order, and [Building the operator CLI](/docs/prism/development/building-the-cli) covers it.
 
 ## Verify the version
 
