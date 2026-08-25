@@ -8,7 +8,7 @@ This is the other hosting of the same product, not a second product. Read [Prere
 
 If you tried Prism on a workstation with the local backend, that choice does not carry over. Read [Storage backends](/docs/prism/install/storage-backends) for what the backends are and why they hold separate data.
 
-**A PostgreSQL server must be reachable from the Windmill workers.** That is a smaller condition than it sounds for a self-hosted Windmill sitting in the same network, and a real one for Windmill Cloud: the workers reach your server from the public internet, so a firewalled server must allow their egress. Windmill publishes no static egress IP list for its cloud, so ask their support for the worker group's external range, run a self-hosted worker inside your network, or use a private endpoint. A worker that cannot get through reports `connect ETIMEDOUT`, not a credentials error.
+**A PostgreSQL server must be reachable from the Windmill workers.** For a self-hosted Windmill in the same network, that condition is a small one. For Windmill Cloud it is real: the workers reach your server from the public internet, so a firewalled server must allow their egress. Windmill publishes no static egress IP list for its cloud. Ask their support for the worker group's external range, run a self-hosted worker inside your network, or use a private endpoint. A worker that cannot get through reports `connect ETIMEDOUT`, not a credentials error.
 
 ## Before you run the installer
 

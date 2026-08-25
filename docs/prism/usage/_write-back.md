@@ -22,7 +22,7 @@ cd acme-central
 npx prism-sync <rule-id>
 ```
 
-There is no separate write-back command here. You run the rule, and the direction follows its target — a remote target enqueues instead of merging. [Run a sync rule](/docs/prism/usage/sync) covers that.
+A write-back runs through the same command as any other rule. The direction follows the rule's target: a remote target enqueues instead of merging. [Run a sync rule](/docs/prism/usage/sync) covers that.
 
 **Expected output.** The usual sync summary. The queued writes are in the source's outbox, not at the source.
 
@@ -53,7 +53,7 @@ Each line it prints is tagged as a dry run, and the opening line says so too. Th
 
 ## Half two, by hand: the review app's Outbox
 
-**When no connector can reach the source, the queue is still actionable — by a person.** The review app's **Outbox** entry lists every source that has an outbox and how many writes are queued for it, shows each queued write in full, and downloads the lot as JSON.
+**When no connector can reach the source, the queue is still actionable — by a person.** The review app's **Outbox** entry lists every source that has an outbox, with the number of writes queued for it. It shows each queued write in full, and downloads the lot as JSON.
 
 Nothing on that screen reaches your source system. The app holds no source credentials and no connectivity; it reads the queue and it records outcomes. The sequence is:
 
@@ -61,9 +61,9 @@ Nothing on that screen reaches your source system. The app holds no source crede
 2. Perform those writes yourself, in the source system.
 3. Come back, tick the items you actually performed, and press **Mark done**.
 
-**Marking an item done is a claim, not an action.** It records that the write has already happened at the source — which is exactly what the completion guarantee below is about, and exactly the thing the dry-run drain gets wrong. Tick nothing you did not do.
+**Marking an item done is a claim, not an action.** It records that the write has already happened at the source. That is what the completion guarantee below rests on, and what the dry-run drain gets wrong. Tick nothing you did not do.
 
-An item you could not perform is best left alone. `pending` is already the correct state for a write that has not happened: nothing has been consumed, and the item is still there next time. The app deliberately offers no way to mark an item `failed` — that status exists so a connector can record an error its API returned, which is not something a person clicking a button knows.
+An item you could not perform is best left alone. `pending` is already the correct state for a write that has not happened: nothing has been consumed, and the item is still there next time. The app deliberately offers no way to mark an item `failed`. That status exists so a connector can record an error its API returned. A person clicking a button does not have that error.
 
 A `create` item needs one extra thing: the native id the source gave the record you provisioned. Enter it beside that row before marking it done, or the engine has no way to link the new record back to the master.
 
@@ -77,7 +77,7 @@ An item stays **pending** until the edge acts on it. Only then is it marked `don
 
 That is what makes the operation safe to repeat. A drain that never ran leaves every item pending, and running it later processes exactly those items. A write that failed is marked `failed` with its error, and is not silently counted as delivered.
 
-This is also why the dry-run default is dangerous rather than merely useless: it satisfies the guarantee's mechanism — the edge did act — without doing the work the guarantee is about.
+This is also why the dry-run default is dangerous rather than merely useless. The edge did act, so the guarantee's mechanism is satisfied. The work the guarantee is about never happened.
 
 ## Where to go next
 

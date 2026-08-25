@@ -25,7 +25,7 @@ npm run collect:spreadsheet
 
 ### Auto-Detection
 
-If no mapping file is provided, the connector looks for `<basename>.mapping.json` in the same directory as the XLSX file, where `<basename>` is the filename up to the first non-alphabet character.
+Without a mapping file, the connector looks for `<basename>.mapping.json` beside the XLSX file. `<basename>` is the filename up to the first non-alphabet character.
 
 ```bash
 # assets_2025.xlsx → looks for assets.mapping.json

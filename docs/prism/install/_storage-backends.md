@@ -31,7 +31,7 @@ Windmill-hosted Prism does not read these variables. It reads a Windmill resourc
 
 ## The PostgreSQL backend
 
-PostgreSQL holds each collection in its own table, as `_id text primary key, doc jsonb`. Tables are created the first time something writes to that collection, so there is no migration to run and no schema to install before you start.
+PostgreSQL holds each collection in its own table, as `_id text primary key, doc jsonb`. The engine creates each table the first time something writes to that collection. There is no migration to run before you start.
 
 **The driver is not installed by default.** `pg` is an optional dependency, so a node that uses MongoDB or the local store never carries it. Install it on a node that needs it:
 
@@ -52,9 +52,9 @@ Selecting `postgres` without it stops at startup and tells you the same thing.
 
 PostgreSQL stores documents as `jsonb`, which normalises the keys of every JSON object — ordering them by key length, then by bytes. So a record written with its keys in one order reads back with them in another.
 
-**No value changes and nothing is lost.** Every field, every value and every provenance entry survives exactly. What differs is the order keys come back in, which you will notice anywhere a listing is printed in key order — the demo's consolidated-master output is the obvious one.
+**No value changes and nothing is lost.** Every field, every value and every provenance entry survives exactly. What differs is the order keys come back in. You notice it anywhere a listing prints in key order, such as the demo's consolidated-master output.
 
-This matters in one place beyond display: deciding whether a field changed. Prism compares field values structurally rather than by their serialised text, so a value that only came back with its keys reordered is correctly seen as unchanged. Were it compared as text, a record with an object-valued field would appear to change on every single sync and never settle.
+This matters in one place beyond display: deciding whether a field changed. Prism compares field values structurally rather than by their serialised text. A value that came back with only its keys reordered is correctly seen as unchanged. Were it compared as text, a record with an object-valued field would appear to change on every single sync and never settle.
 
 Array order is preserved. A list is a list.
 

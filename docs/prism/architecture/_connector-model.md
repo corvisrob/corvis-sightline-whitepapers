@@ -71,13 +71,13 @@ A collector runs, reads its source, and produces a snapshot.
 
 That registration is also why a rule pointing at a table no source has ever transmitted to fails with an unknown-table error. The table does not exist yet.
 
-## What a connector does not do
+## The boundary
 
-A connector does not merge. It does not resolve conflicts, it does not decide priority, and it does not write to the consolidated dataset. It collects, normalises and transmits.
+A connector collects, normalises and transmits. Every judgement about what a value means belongs to the engine: which record it describes, which source outranks which, and what reaches the consolidated dataset. A connector never writes there.
 
-The one exception is write-back, where a connector drains the outbox and writes to its own source. Even there the connector does not decide *what* to write — the engine decided that. The connector performs the write, because it is the only component with connectivity and credentials for that source. See [Sync engine](/docs/prism/architecture/sync-engine) for how the engine decides what to write.
+Write-back is the one exception, and a narrow one. A connector drains the outbox and performs the write against its own source, because it holds the connectivity and the credentials for it. The engine still decided what to write. See [Sync engine](/docs/prism/architecture/sync-engine) for how it decides.
 
-This separation is what makes connectors a public extension surface. A connector needs the connector SDK. It does not need the engine.
+This separation is what makes a connector a public extension surface. It builds against the connector SDK alone.
 
 ## Where to go next
 

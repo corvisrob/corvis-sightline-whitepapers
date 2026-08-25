@@ -1,10 +1,10 @@
 The sync engine merges records from your connected datasets into one consolidated dataset. This document describes what the engine does and what it guarantees. It does not describe how the engine is built.
 
-Read this when you need to explain a result: why two records merged, why they did not, or why a value you expected did not change.
+Read this when you need to explain a result: why two records merged, or why a value you expected did not change.
 
 ## What a sync rule does
 
-A sync rule names a source, a target, and the fields to map between them. When you run a rule, the engine produces a **changeset**: a list of proposed changes, each one either applied immediately or held for a person to decide.
+A sync rule names a source, a target, and the fields to map between them. When you run a rule, the engine produces a **changeset**. It lists the proposed changes, each one either applied immediately or held for a person to decide.
 
 The engine never edits your source systems during a sync. A sync reads.
 
@@ -76,7 +76,7 @@ Shadowing is not a failure. It is the engine telling you that a lower-trust sour
 
 A source that stops reporting an asset should not hold a field hostage forever.
 
-When the source that owns a field's value stops reporting the asset, the engine starts a grace period. **Within the grace period the value keeps its priority** — a source that misses one collection has not become untrustworthy. Once the source has been missing for longer than the grace period, the field's priority is demoted below any source still reporting, so a fresh value from a lower-priority source wins.
+When the source that owns a field's value stops reporting the asset, the engine starts a grace period. **Within the grace period the value keeps its priority** — a source that misses one collection has not become untrustworthy. Once the source has been missing for longer than the grace period, the engine demotes the field's priority below any source still reporting. A fresh value from a lower-priority source then wins.
 
 The default grace period is 24 hours. A rule can set its own.
 
@@ -88,7 +88,7 @@ The engine tracks which sources still report each asset.
 - A source that reports an asset again after it went missing produces a re-appearance change, and the asset reactivates.
 - An asset can be active, a decommission candidate, or decommissioned, derived from what its sources report.
 
-Presence reconciliation is on by default. Turn it off per rule for a source that reports only part of your estate, because a partial inventory would otherwise look like a set of disappearances.
+Presence reconciliation is on by default. Turn it off per rule for a source that reports only part of your estate. A partial inventory otherwise looks like a set of disappearances.
 
 ## Applying: what happens automatically
 
@@ -111,7 +111,7 @@ This is the safe default, and it is deliberate. Automatic creation on every unma
 
 `pending`, `applied`, `shadowed`, `approved`, `rejected`, `rolled_back`, `superseded`, `linked`.
 
-`superseded` deserves a note: when a rule runs again and a review item from the previous run is still waiting, the engine retires the old item rather than presenting you the same decision twice.
+`superseded` deserves a note. When a rule runs again while a review item from the previous run is still waiting, the engine retires the old item. It does not present you the same decision twice.
 
 ## Provenance: why you can audit a value
 

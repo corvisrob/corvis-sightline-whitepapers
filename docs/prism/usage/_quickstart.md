@@ -61,7 +61,7 @@ Choose **Browse a dataset's records**, pick your consolidated dataset, and open 
 
 **Expected output.** The merged record, with each field showing the source that supplied its value and that source's priority.
 
-That last line is the whole product in one screen: a record assembled from two disagreeing sources, with every value traceable to where it came from and a decision you made recorded against it.
+Two disagreeing sources produced that record. Every value on it names where it came from, and carries the decision you made about it.
 
 ## What to do next
 

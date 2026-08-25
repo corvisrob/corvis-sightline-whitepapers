@@ -1,4 +1,4 @@
-Collects local system information from the machine it runs on and pushes an `AssetComputer` snapshot straight to MongoDB — entirely in PowerShell, no Python or Node.js required.
+Collects local system information from the machine it runs on, and pushes an `AssetComputer` snapshot straight to MongoDB. It runs entirely in PowerShell, and needs neither Python nor Node.js.
 
 Native counterpart to the [`local-host-python`](/docs/prism/architecture/connectors/local-host-python) connector: same data, same `AssetComputer` schema — just collected via `Get-CimInstance` instead of `psutil`, and written to its own `snapshots_local-host-powershell` collection. Use this variant on Windows machines where you don't want to install Python.
 
@@ -63,7 +63,7 @@ $trigger = New-ScheduledTaskTrigger -Daily -At '02:00'
 Register-ScheduledTask -TaskName 'Prism-Agent-Collection' -Action $action -Trigger $trigger
 ```
 
-To scope credentials to the task rather than the machine-wide environment, set `MONGODB_URI`/`MONGODB_DB` as environment variables on the scheduled task's action, or pass `-MongoUri`/`-Database` directly in the `-Argument` string.
+To scope credentials to the task rather than the machine-wide environment, set `MONGODB_URI` and `MONGODB_DB` on the scheduled task's action. You can also pass `-MongoUri` and `-Database` in the `-Argument` string.
 
 ## Security Considerations
 

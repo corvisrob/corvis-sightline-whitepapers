@@ -22,7 +22,15 @@ Five entry points.
 
 ## The review TUI
 
-`prism-review` is the operator console proper. It is a terminal interface, and it covers six operations: reviewing pending changes, browsing changesets, browsing a dataset's records, re-running a rule, managing deferrals, and managing rules.
+`prism-review` is the operator console proper. It is a terminal interface, and it covers the same six operations:
+
+- Review pending changes
+- Browse changesets
+- Browse a dataset's records
+- Re-run a rule
+- Manage deferrals
+- Manage rules
+
 
 **The review TUI and the review app mirror each other on all six.** The same operations, the same decisions, the same effects. One runs in a terminal, the other in a browser. The review app adds two entries the terminal has no equivalent for, because they exist to cover a source whose connector cannot run.
 

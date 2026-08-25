@@ -57,11 +57,11 @@ Each run produces two outputs, in this order:
    as a warning (`MongoDB upload skipped: …`) and the run still exits successfully
    with the JSON file intact.
 
-The connector calls the real Falcon API directly — it authenticates via OAuth2
-client credentials (`/oauth2/token`), queries device IDs from
-`/devices/queries/devices/v1`, then fetches device details from
-`/devices/entities/devices/v2` in batches of **100 IDs** (the entities endpoint's
-per-request limit). `axios` is already a project dependency; no extra install is
+The connector calls the real Falcon API directly. It authenticates with OAuth2
+client credentials at `/oauth2/token`, then queries device IDs from
+`/devices/queries/devices/v1`. It fetches the details from
+`/devices/entities/devices/v2` in batches of **100 IDs**, which is that
+endpoint's per-request limit. `axios` is already a project dependency; no extra install is
 needed.
 
 ## CrowdStrike API Authentication

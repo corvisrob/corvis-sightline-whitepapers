@@ -15,9 +15,9 @@ The updater does not do this for you, because it never touches your resources - 
 2. Push the resource type, then the resource, then the scripts, then the app - in that order. A script deployed before its resource exists has nothing to bind.
 3. Rebind any schedule or trigger that passed `mongodb`. The field is now `storage`.
 
-**The updater checks that you have done this.** An install with no `f/prism/storage.resource.yaml` is either un-migrated or has lost its storage resource, and refreshing one installs scripts whose first parameter is `storage` over a workspace that has nothing to bind them to. The updater stops on that check before touching a single file, names the migration, and changes nothing. `--dry-run` stops on it too, so a dry run cannot report clean on an install the real run would refuse.
+**The updater checks that you have done this.** An install with no `f/prism/storage.resource.yaml` is either un-migrated or has lost its storage resource. Refreshing one installs scripts whose first parameter is `storage`, over a workspace with nothing to bind them to. The updater stops on that check before touching a single file, names the migration, and changes nothing. `--dry-run` stops on it too, so a dry run cannot report clean on an install the real run would refuse.
 
-⛔ **Push per file** (`wmill script push <file>`). A whole-tree `wmill sync push` deletes anything in the workspace that is absent from your install directory, which usually includes scripts that only ever existed in the workspace.
+⛔ **Push per file** (`wmill script push <file>`). A whole-tree `wmill sync push` deletes anything in the workspace that your install directory does not hold. That usually includes scripts which only ever existed in the workspace.
 
 Read [Storage backends](/docs/prism/install/storage-backends) before choosing PostgreSQL: it is now a supported backend for this layer, and it must be reachable from the Windmill workers.
 
@@ -89,15 +89,15 @@ Your credentials survive an upgrade. You do not re-enter them.
 
 The refresh is a mirror, not a merge. Anything under `f/`, `windmill/` or `vendor/` that the archive does not carry — and that is not on the preserved list above — **is deleted**.
 
-That is deliberate, and it is what the dry run is for: it is how a script this release retires leaves your install, and how the previous release's engine chunks leave `vendor/`.
+That is deliberate, and it is what the dry run is for. It is how a script this release retires leaves your install, and how the previous release's engine chunks leave `vendor/`.
 
 **Your own deployment state is not in that set.** The updater does not work from a fixed list of files to spare. It reads the install: your storage resource, every connector credential resource, and every collector script the installer put there. Set a connector up and it keeps both halves — the credentials and the script they drive — through every later refresh.
 
-A collector script the archive does not ship is always yours, so it is always kept — including one left behind by a connector setup you interrupted before entering its credentials. The one collector the archive does ship, for `jira-assets`, is kept when you have that connector set up here and refreshed from the archive when you do not.
+A collector script the archive does not ship is always yours, so the updater always keeps it. That includes one left behind by a connector setup you interrupted before entering its credentials. The one collector the archive does ship, for `jira-assets`, is kept where you have that connector set up here. Otherwise the updater refreshes it from the archive.
 
 ### Restoring a collector script an older updater deleted
 
-Earlier updaters spared a fixed list of files that named neither the collector scripts nor, after the 3.0.0 rename, the storage resource. An upgrade run by one of those deleted the collector script of every connector except `jira-assets`, leaving its credential resource behind — and could delete `f/prism/storage.resource.yaml` outright.
+Earlier updaters spared a fixed list of files that named neither the collector scripts nor, after the 3.0.0 rename, the storage resource. An upgrade run by one of those deleted the collector script of every connector except `jira-assets`, and left its credential resource behind. It could also delete `f/prism/storage.resource.yaml` outright.
 
 If [Verify the upgrade](#verify-the-upgrade) finds a credential resource with no matching collector script, this is why.
 

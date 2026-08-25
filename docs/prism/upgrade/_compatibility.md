@@ -63,9 +63,9 @@ Version 3.0.0 adds the PostgreSQL backend and moves storage behind a proper adap
 | The storage module moved. `lib/mongo.js` no longer exists. | Any import of `@sightline/prism-connector-sdk/lib/mongo.js` fails to resolve. | Import the storage instance from `@sightline/prism-connector-sdk/lib/storage/index.js`, and `MongoStorage` from `.../lib/storage/mongo.js`. |
 | The debug admin helpers take a store, not a connection string. `mongo-admin.js` is now `storage-admin.js`. | `snapshotDatabase`, `restoreDatabase`, `listRules`, `deleteRules`, `inspectCollection`, `clearCollections`, `upsertRules` and `listSnapshots` no longer accept `(uri, dbName, …)`. | Pass a connected storage instance as the first argument in place of the two connection parameters. The names and return shapes are unchanged. |
 
-Both breaks surface at build time rather than at run time, which is deliberate: the Windmill layer's vendored bundle names every export it uses, so a rename fails the bundle build instead of producing an `undefined is not a function` on a worker.
+Both breaks surface at build time rather than at run time, which is deliberate. The Windmill layer's vendored bundle names every export it uses. A rename therefore fails the bundle build, rather than producing an `undefined is not a function` on a worker.
 
-**An unrecognised `STORAGE_BACKEND` now stops the runtime at startup.** In 2.x, any value that was not `local` selected MongoDB, so a typo wrote to the wrong store and nothing reported it. If you have a node whose `STORAGE_BACKEND` has been quietly misspelled, it worked before and will refuse to start now — read [Storage backends](/docs/prism/install/storage-backends) and set the value you actually meant. Its records are in whichever store it has been writing to.
+**An unrecognised `STORAGE_BACKEND` now stops the runtime at startup.** In 2.x, any value that was not `local` selected MongoDB, so a typo wrote to the wrong store and nothing reported it. A node whose `STORAGE_BACKEND` has been quietly misspelled worked before, and refuses to start now. Read [Storage backends](/docs/prism/install/storage-backends) and set the value you meant. Its records are in whichever store it has been writing to.
 
 ## Schema versions are a second axis
 

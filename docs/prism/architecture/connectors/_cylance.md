@@ -12,7 +12,7 @@ Every device the Cylance tenant reports, with its operating system, network inte
 
 The connector maps the device's reported state to a Prism run status: `online` becomes `running`, and both `offline` and `inactive` become `stopped`. Any other value is left unknown rather than guessed.
 
-It parses the vendor's combined operating-system string into a separate name and version, and maps each reported IP address to a network interface, pairing it with the MAC address at the same position. The first interface is named `primary`.
+It parses the vendor's combined operating-system string into a separate name and version. It maps each reported IP address to a network interface, and pairs it with the MAC address at the same position. The first interface is named `primary`.
 
 ## Credentials
 
@@ -41,7 +41,12 @@ The default `baseUrl` is region-specific. A tenant outside that region must set 
 
 ## How it runs
 
-The collector performs the four standard steps: it exchanges its credentials for an access token, pages through the devices endpoint until the tenant reports no more, transforms each device to `AssetComputer`, and transmits the snapshot to the instance inbox.
+The collector performs the four standard steps:
+
+1. It exchanges its credentials for an access token.
+2. It pages through the devices endpoint until the tenant reports no more.
+3. It transforms each device to `AssetComputer`.
+4. It transmits the snapshot to the instance inbox.
 
 It allows partial success. A device that fails schema validation is reported and skipped; the remaining devices still transmit. A collection is not lost because one record is malformed.
 

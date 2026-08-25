@@ -57,19 +57,48 @@ A specific type extends `BaseAsset` with the fields its class of asset needs. Pr
 
 Servers, virtual machines, workstations and containers.
 
-It adds the operating system and its version, the processor count, the memory size, the storage size, the network interfaces, the run status, the host name, the fully-qualified domain name, and whether the machine is physical, virtual or a container.
+It adds:
+
+| Field | Holds |
+|---|---|
+| `os`, `osVersion` | The operating system and its version |
+| `cpu`, `memory`, `storage` | Core count, memory in MB, storage in GB |
+| `network[]` | Per interface: `interface`, `ipAddress`, `macAddress`, `type` |
+| `status` | `running`, `stopped`, `maintenance` or `unknown` |
+| `hostname`, `fqdn` | The host name, and the fully-qualified form |
+| `virtualization` | `type` (`vm`, `container`, `physical`), `hypervisor`, `hostId` |
 
 ### AssetNetwork
 
 Switches, routers, firewalls and load balancers.
 
-It adds the IP address, the subnet, the VLAN, the device type, the vendor, the model, the firmware version, the port count, the bandwidth and the connected devices.
+It adds:
+
+| Field | Holds |
+|---|---|
+| `ipAddress`, `subnet`, `vlan` | The address, the subnet in CIDR notation, the VLAN id |
+| `managementIp` | The management address, where it differs |
+| `deviceType` | Switch, router, firewall, load balancer |
+| `vendor`, `model`, `firmware` | Hardware identity |
+| `ports`, `bandwidth` | Port count, and a rate such as `10Gbps` |
+| `status` | `active`, `inactive`, `maintenance` or `unknown` |
+| `connections[]` | The devices this one connects to |
 
 ### AssetControlDevice
 
 Industrial control equipment: programmable logic controllers, remote terminal units, human-machine interfaces and supervisory systems.
 
-It adds the vendor, the model, the firmware version, the serial number, the device class, the industrial protocols it speaks, the process it serves, and its certifications and safety rating.
+It adds:
+
+| Field | Holds |
+|---|---|
+| `vendor`, `model`, `firmware`, `serialNumber` | Hardware identity |
+| `deviceClass` | The kind of control equipment |
+| `protocols[]` | The industrial protocols it speaks, such as Modbus or DNP3 |
+| `ipAddress` | The address, where it has one |
+| `status`, `healthScore` | `operational`, `degraded`, `offline`, `maintenance` or `unknown`, and a score from 0 to 100 |
+| `process` | The process it serves |
+| `certifications[]`, `safetyRating` | Compliance marks, and the SIL rating |
 
 ## Tier 3: extendedData
 
@@ -106,7 +135,11 @@ The rule is mechanical. A connector does not decide field by field.
 
 ### What belongs in extendedData
 
-**Put a field here when** it belongs to one vendor, when you do not query or filter on it, or when it is an identifier that only the source understands.
+**Put a field here when** any of these hold:
+
+- It belongs to one vendor.
+- You do not query or filter on it.
+- It is an identifier that only the source understands.
 
 **Do not put a field here when** you need to query or filter on it, or when more than one source sends it. Both cases mean the field should be in the schema instead. Ask for it.
 

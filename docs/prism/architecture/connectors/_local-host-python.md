@@ -1,6 +1,6 @@
 Collects local system information from the machine it runs on and normalizes it to the `AssetComputer` schema.
 
-Python implementation — requires Python 3.8+ and `psutil`. For Windows machines where Python isn't available, see the native [`local-host-powershell`](/docs/prism/architecture/connectors/local-host-powershell) connector, which collects the same data via `Get-CimInstance` and needs only PowerShell + the `Mdbc` module.
+Python implementation — requires Python 3.8+ and `psutil`. For a Windows machine without Python, use the native [`local-host-powershell`](/docs/prism/architecture/connectors/local-host-powershell) connector. It collects the same data through `Get-CimInstance`, and needs only PowerShell and the `Mdbc` module.
 
 ## Features
 

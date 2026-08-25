@@ -27,11 +27,11 @@ The workspace tree lives under `f/`. The review app is at `f/prism/review_app__r
 
 ## It carries its own compiled copy of the engine
 
-An install needs **no `sightline-prism` checkout**. The sync engine, the connector SDK, the shared review logic and four connectors — CrowdStrike, Cylance, Azure VMs and Jira Assets — ship inside the release tarball as compiled bundles under `vendor/`, and every script imports them from there. The deployment configuration names `./vendor` as its only code base, so nothing resolves outside the install directory.
+An install needs **no `sightline-prism` checkout**. The release tarball ships compiled bundles under `vendor/`, and every script imports them from there. They hold the sync engine, the connector SDK, the shared review logic, and the CrowdStrike, Cylance, Azure VMs and Jira Assets connectors. The deployment configuration names `./vendor` as its only code base, so nothing resolves outside the install directory.
 
 Cutting a release is the one step that still needs the sibling checkout: `scripts/release.sh` builds `vendor/` from it and aborts if it is absent. Using a release does not.
 
-Two bundles, because the runtimes differ. The backend scripts load `vendor/prism-core.js`, built for Node. The review app runs in a browser and loads `vendor/prism-browser.js`, which is self-contained — it cannot use the Node bundle, whose database client initialises at module load and drags Node-only modules into a browser build.
+Two bundles, because the runtimes differ. The backend scripts load `vendor/prism-core.js`, built for Node. The review app runs in a browser and loads the self-contained `vendor/prism-browser.js`. It cannot use the Node bundle, whose database client initialises at module load and drags Node-only modules into a browser build.
 
 ## Deployment
 
@@ -51,7 +51,16 @@ If you tried Prism on a workstation with the local store, that data does not car
 
 ## The review app and the review TUI
 
-The review app presents the same six operations as the terminal interface of the operator CLI: reviewing pending changes, browsing changesets, browsing a dataset's records, re-running a rule, managing deferrals, and managing rules.
+The review app presents the same six operations:
+
+- Review pending changes
+- Browse changesets
+- Browse a dataset's records
+- Re-run a rule
+- Manage deferrals
+- Manage rules
+
+These are the same operations the operator CLI's terminal interface presents.
 
 They are not two products with different capabilities. They are two front ends over one engine. Choose by where your operator is.
 

@@ -47,10 +47,10 @@ Add custom fields for asset properties:
 | Host Name | Text | `hostName` | Optional - lets this instance identity-link by hostname instead of serial (see `extendedData.hostname` in the transformed asset) |
 | MAC Address | Text | `mac` | Optional - exposed as `extendedData.jiraMacAddress` |
 
-**Note**: field IDs are per-instance config, not hardcoded — set
-`config.fieldIds` in `.connectors/jira-assets.<instance>/manifest.json` to
-your project's actual `customfield_XXXXX` ids (only override the ones your
-project uses; anything else falls back to this connector's defaults):
+**Note**: field IDs are per-instance configuration. Set `config.fieldIds` in
+`.connectors/jira-assets.<instance>/manifest.json` to your project's actual
+`customfield_XXXXX` ids. Override only the ids your project uses; the rest fall
+back to this connector's defaults.
 
 ```json
 {

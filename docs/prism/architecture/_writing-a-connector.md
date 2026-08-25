@@ -68,7 +68,7 @@ This is the part that is genuinely yours. Everything else is pattern.
 
 Map the source's fields to the schema you chose. For each source field, ask whether Prism's schema has a place for it. If yes, map it there. If no, put it in `extendedData`.
 
-Resist the urge to invent schema fields. If a field is one you will query on, and more than one source supplies it, it belongs in the schema itself — ask for it rather than working around its absence.
+Resist the urge to invent schema fields. A field you will query on, that more than one source supplies, belongs in the schema itself. Ask for it rather than working around its absence.
 
 ### 5. Test against a mock first
 

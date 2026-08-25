@@ -1,6 +1,6 @@
 The review app is the browser interface to the same operations the operator CLI provides. It runs in your Windmill workspace, and it is one of the two interfaces to a single product rather than a product of its own.
 
-**It mirrors the review TUI closely, but no longer entry for entry.** The same decisions and the same effects on your data — plus two operations the terminal has no equivalent for, because they exist to cover a source whose connector cannot run.
+**It mirrors the review TUI closely, but no longer entry for entry.** It records the same decisions, with the same effects on your data. It adds two operations the terminal has no equivalent for, which cover a source whose connector cannot run.
 
 **This page tells you where each operation is. It does not repeat the procedures** — those are written once, for both interfaces, and linked below. Following a stale second copy is exactly the failure this structure avoids.
 
@@ -34,9 +34,9 @@ The decisions and their effects are identical. A few practical differences are w
 
 **There is no starting directory.** The CLI procedures open by telling you to change into a runtime instance. The app is already bound to a workspace and its store, so that step does not apply.
 
-**Creating a rule does not ask which kind.** [Create and edit rules](/docs/prism/usage/manage-rules) says `n` asks for sync or reverse before the form. In the app there is no such step: pick the target dataset and the direction follows it, exactly as it does at run time — a local target merges, a remote one pushes. The app only asks when it cannot tell, which means the target is not in the table registry. The rule you end up with is the same either way.
+**Creating a rule does not ask which kind.** [Create and edit rules](/docs/prism/usage/manage-rules) says `n` asks for sync or reverse before the form. The app has no such step. Pick the target dataset and the direction follows it, exactly as it does at run time: a local target merges, a remote one pushes. The app only asks when it cannot tell, which means the target is not in the table registry. The rule you end up with is the same either way.
 
-**Two entries have no terminal counterpart.** **Upload a document into a source's inbox** and **Complete a source's pending write-backs** both exist for a source that no connector can reach — one puts data in, the other takes the queued writes out. The CLI has no command for either; the screens carry their own guidance, and [Run a write-back](/docs/prism/usage/write-back) explains what completing a write-back does and does not mean.
+**Two entries have no terminal counterpart.** **Upload a document into a source's inbox** and **Complete a source's pending write-backs** both cover a source that no connector can reach. One puts data in. The other takes the queued writes out. The CLI has no command for either. The screens carry their own guidance, and [Run a write-back](/docs/prism/usage/write-back) explains what completing a write-back means.
 
 Everything else in the linked procedures reads the same in either interface.
 
