@@ -1,14 +1,27 @@
-This page sets up one pipeline from end to end. Sightline Prism collects CrowdStrike endpoints into a consolidated dataset. It writes those records out to Jira as CMDB issues. It reads Jira back, so the two stay linked.
+Sightline Prism collects CrowdStrike endpoints into a consolidated dataset. It writes those records out to Jira as CMDB issues, and it reads Jira back, so the two stay linked.
 
-The page assembles the other install pages into one order. It adds what is specific to this pipeline, which is the three rule mappings. Where another page owns a step, this page links to it.
+This recipe builds that loop on Windmill-hosted Prism over a PostgreSQL store.
 
-For a rehearsal that needs no credentials, use the synthetic fixture demo in the repository under `demo/`. It runs on a workstation with no CrowdStrike tenant and no Jira site.
+## The four choices
+
+Four decisions shape an install of Prism. This recipe has made all four.
+
+| Choice | This recipe | Where another recipe changes it |
+|---|---|---|
+| Hosting | Windmill-hosted Prism | [Installing Standalone Prism](/docs/prism/install/prism) covers the other hosting |
+| Storage backend | PostgreSQL | [Storage backends](/docs/prism/install/storage-backends) covers MongoDB. This hosting does not accept the local JSON store |
+| Endpoint source | CrowdStrike Falcon | Cylance and Azure VMs ship in the same connector catalog. See [Installing Windmill-hosted Prism](/docs/prism/install/windmill) |
+| System of record | Jira | [Writing a connector](/docs/prism/architecture/writing-a-connector) covers a target that Prism does not already ship |
+
+The recipe also fixes one name. Every source id below uses the instance `prod`, which gives `crowdstrike.prod` and `jira-assets.prod`.
+
+Each part follows one row. Part 1 follows the storage backend, Part 2 the endpoint source, and Part 3 the system of record. Part 4 sets the priorities between the last two. The hosting decides the commands in Part 1 and Part 5.
 
 ## What you end up with
 
 ```mermaid
 flowchart LR
-  CS["CrowdStrike"] -->|collect| INBOX[("inbox")]
+  CS["CrowdStrike"] -->|crowdstrike_collect| INBOX[("inbox")]
   INBOX -->|crowdstrike-sync| CONS[("consolidated dataset")]
   JIRA["Jira issues"] -->|jira-assets-sync| CONS
   CONS -->|"technical-to-jira<br/>(mirror creates the missing ones)"| JIRA
@@ -22,50 +35,44 @@ The round trip takes three rules.
 | `jira-assets-sync` | Jira to the consolidated dataset | Which CMDB fields land, and how far below CrowdStrike they sit |
 | `technical-to-jira` | The consolidated dataset to Jira | Which merged values go back, and whether an unlinked host gets an issue |
 
-The second and third rules make a loop rather than two one-way feeds. Jira's static entries arrive at a low priority. CrowdStrike's live values win. The winner then goes back out over Jira's stale copy.
+The second and third rules make a loop rather than two one-way feeds. Jira's static entries arrive at a low priority. CrowdStrike's live values win, and the winner then goes back out over Jira's stale copy.
 
 ## Before you start
 
-Read [Prerequisites](/docs/prism/install/prerequisites). Then read [Installing Standalone Prism](/docs/prism/install/prism) and [The runtime instance](/docs/prism/install/runtime-instance).
+Read [Prerequisites](/docs/prism/install/prerequisites), then [Installing Windmill-hosted Prism](/docs/prism/install/windmill).
 
-Every command on this page runs from a runtime instance. It does not run from the directory you installed from. [The runtime instance](/docs/prism/install/runtime-instance) explains why, and this is the most common early mistake.
+The installer runs from its own directory, beside the archive it reads. Every `wmill` command below runs from the install directory that `--dir` names. That directory holds `wmill.yaml`, which is where the `wmill` CLI reads its workspace binding.
 
-Arrange three things first:
+Arrange four things first:
 
-- A PostgreSQL server that the collectors can reach.
+- A Windmill workspace, registered with your `wmill` CLI.
+- A PostgreSQL server that the Windmill workers can reach.
 - CrowdStrike API credentials with the read scopes the connector needs.
 - A Jira project that you administer.
 
-You create the Jira project, its issue type and its custom fields. Part 3 names the fields. The rest of the page assumes they exist.
+You create the Jira project, its issue type and its custom fields before you run the installer. Part 3 names the fields.
 
 ---
 
 ## Part 1 — PostgreSQL
 
-Read [Storage backends](/docs/prism/install/storage-backends) for how to set up PostgreSQL.
-
-Set two variables for this pipeline:
+One command installs the layer. It asks for the storage backend, then for each connector's credentials in turn.
 
 ```bash
-export STORAGE_BACKEND=postgres
-export POSTGRES_URI='postgresql://<user>:<password>@<host>:5432/<database>?sslmode=require'
+node install.mjs --dir ./acme-prism-windmill --connectors crowdstrike,jira-assets
 ```
+
+Answer `postgres` at the backend prompt. The installer then asks only for that backend's values, which [Installing Windmill-hosted Prism](/docs/prism/install/windmill) lists in full. It writes the resource to `f/prism/storage` and stores the password as a Windmill secret variable.
 
 Two things cause trouble here.
 
-The `pg` driver is an optional dependency. Install it on any node that selects `postgres`:
+**Leave `sslmode` at `require`.** A managed server refuses a connection that does not use TLS, and the refusal does not mention TLS. It reports `no pg_hba.conf entry for host ...`, which reads as a firewall fault.
 
-```bash
-npm install pg
-```
-
-A node that selects `postgres` without the driver stops at startup and says so.
-
-A managed server refuses a connection that does not use TLS. The refusal does not mention TLS. It reports `no pg_hba.conf entry for host ...`, which reads as a firewall fault. The `sslmode=require` value above prevents it.
+**The workers reach the server, not your workstation.** A Windmill Cloud worker connects from the public internet, so a firewalled server must allow its egress. A worker that cannot get through reports `connect ETIMEDOUT`, not a credentials error.
 
 There is no schema to create. The engine creates each table on the first write to that collection.
 
-Confirm the backend before you go on. Every command that touches storage names the backend in its startup log. [Storage backends](/docs/prism/install/storage-backends) covers how to verify it.
+The install carries the `pg` driver. The `npm install pg` step in [Storage backends](/docs/prism/install/storage-backends) applies to a standalone node, not to this hosting.
 
 ---
 
@@ -73,40 +80,27 @@ Confirm the backend before you go on. Every command that touches storage names t
 
 Read [CrowdStrike Falcon Connector](/docs/prism/architecture/connectors/crowdstrike) for the regional base URL your tenant needs and the API scopes to grant.
 
-The connector reads its `.env` from its own folder. It does not read the repository root, and it does not read the runtime instance:
+The same installer run asks for three values.
 
-```
-packages/connectors/crowdstrike/.env
-```
+| Prompt | What it holds |
+|---|---|
+| `clientId` | The API client id |
+| `clientSecret` | The API client secret. The prompt is masked, and the value becomes a Windmill secret variable |
+| `baseUrl` | Your tenant's cloud. US-1 is offered as the default. US-2, EU-1 and US-GOV-1 use their own hosts, and the connector README lists them |
 
-```ini
-CROWDSTRIKE_CLIENT_ID=...
-CROWDSTRIKE_CLIENT_SECRET=...
-# Must match your tenant's cloud. US-1 is the default. US-2, EU-1 and
-# US-GOV-1 use their own hosts. The README lists them.
-CROWDSTRIKE_BASE_URL=https://api.crowdstrike.com
-```
+The installer writes the resource to `f/prism/crowdstrike_credentials` and copies the collector script to `f/prism/crowdstrike_collect.ts`.
 
 ### Name the instance
 
 An instance name separates one deployment of a connector from another. The name becomes part of the source id that every rule references.
 
-Choose the name now. Do not change it later. The rules, the inbox and the outbox all key on it.
+In this hosting the instance is an argument to the collector script. There is no manifest file to write, and no `.connectors` directory.
 
-This page uses `prod`, which gives the source id `crowdstrike.prod`.
-
-```bash
-mkdir -p .connectors/crowdstrike.prod
-cat > .connectors/crowdstrike.prod/manifest.json <<'EOF'
-{"connectorType": "crowdstrike", "instance": "prod", "schema": "AssetComputer", "credentials": {}, "config": {}}
-EOF
-```
+Choose the name now. Do not change it later, because the rules, the inbox and the outbox all key on it. This recipe uses `prod`, which gives the source id `crowdstrike.prod`.
 
 ### Run the first collection
 
-[Run a collector](/docs/prism/usage/collect) covers the command. It also covers how to confirm that the snapshot landed.
-
-Collect before you write any rule. A rule written against a guess at the field names costs you two debugging passes.
+Collect before you write any rule. A rule written against a guess at the field names costs you two debugging passes. Part 5 carries the command.
 
 Then read one real record. The connector normalises a CrowdStrike host to `AssetComputer`. It puts vendor-specific values under `extendedData.crowdstrike*`, which holds most of the fields Part 4 maps.
 
@@ -118,7 +112,7 @@ You set up Jira. Prism does not create a project, an issue type, a field or a sc
 
 ### 1. Create the project and the issue type
 
-Create the project, or use an existing one. Choose the issue type that represents a machine. This page uses the project key `ASSET` and the issue type `Computer`.
+Create the project, or use an existing one. Choose the issue type that represents a machine. This recipe uses the project key `ASSET` and the issue type `Computer`.
 
 ### 2. Create the custom fields
 
@@ -147,38 +141,67 @@ curl -u you@example.com:$JIRA_API_TOKEN \
   | jq '.[] | select(.custom) | {name, id}'
 ```
 
-### 4. Put the ids in the manifest
+### 4. Answer the Jira credential prompts
 
-Field ids are per-instance configuration. Set them in the connector manifest. The connector falls back to its own defaults for any id you do not override.
+The installer asks for four values, and writes them to `f/prism/jira-assets_credentials`.
 
-```bash
-mkdir -p .connectors/jira-assets.prod
-cat > .connectors/jira-assets.prod/manifest.json <<'EOF'
-{
-  "connectorType": "jira-assets",
-  "instance": "prod",
-  "schema": "BaseAsset",
-  "credentials": {},
-  "config": {
-    "baseUrl": "https://your-domain.atlassian.net",
-    "projectKey": "ASSET",
-    "fieldIds": {
-      "hostName": "customfield_10001",
-      "ip":       "customfield_10002",
-      "mac":      "customfield_10003",
-      "model":    "customfield_10004",
-      "assetId":  "customfield_10005"
-    }
-  }
-}
-EOF
+| Prompt | What it holds |
+|---|---|
+| `url` | `https://your-domain.atlassian.net` |
+| `email` | The account the API token belongs to |
+| `apiToken` | The API token. The prompt is masked, and the value becomes a Windmill secret variable |
+| `projectKey` | `ASSET` |
+
+This gives the source id `jira-assets.prod`.
+
+### 5. Put the field ids in the collector script
+
+The Windmill collector script builds the connector manifest itself, from the credentials resource. It sets the base URL and the project key, and it sets no field ids.
+
+Open `f/prism/jira-assets_collect.ts` in your install directory. Add a `fieldIds` map to the manifest config:
+
+```ts
+const manifest = {
+  connectorType: 'jira-assets',
+  instance,
+  schema: 'BaseAsset',
+  credentials: {},
+  config: {
+    baseUrl: jira_credentials.url,
+    projectKey: jira_credentials.projectKey || 'ASSET',
+    fieldIds: {
+      hostName: 'customfield_10001',
+      ip:       'customfield_10002',
+      mac:      'customfield_10003',
+      model:    'customfield_10004',
+      assetId:  'customfield_10005',
+    },
+  },
+};
 ```
 
 Substitute your own ids. The ids above are examples and do not match your site.
 
-Put the credentials in `packages/connectors/jira-assets/.env`. It holds `JIRA_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN` and `JIRA_PROJECT_KEY`.
+⛔ `hostName` has no default, and neither does `mac`. The connector's built-in ids cover the other keys. Rule 4b matches a Jira issue to a machine on `extendedData.hostname`, which is the `hostName` field. Without this override, every Jira issue creates a second master record beside the CrowdStrike one.
 
-This gives the source id `jira-assets.prod`.
+A later installer run does not disturb this edit. The installer skips a connector whose credentials resource file is already present. Deleting `f/prism/jira-assets_credentials.resource.yaml` to redo the credentials copies the template back over your edit.
+
+### 6. Deploy
+
+The installer ends with a preview. Read it, then push.
+
+```bash
+cd acme-prism-windmill
+wmill sync push
+```
+
+Confirm the push landed:
+
+```bash
+wmill sync push --dry-run
+```
+
+**Expected output.** No remaining changes. A second preview that still lists the same scripts and resources means the push did not complete.
 
 ---
 
@@ -186,7 +209,11 @@ This gives the source id `jira-assets.prod`.
 
 This part is specific to your data. Work through it slowly.
 
-[Create and edit rules](/docs/prism/usage/manage-rules) covers the editor. This page covers what to put in it.
+Open the review app in your Windmill workspace and choose **Manage rules**. [Create and edit rules](/docs/prism/usage/manage-rules) covers the editor. This part covers what to put in it.
+
+### Where the rules live
+
+This hosting keeps rules in the `rules` collection in your store. There is no `rules` directory and no file to load, so the editor is how a rule gets in and how it changes.
 
 ### How the editor presents a rule
 
@@ -237,7 +264,7 @@ The grid does not hold the identity keys or `sourceIdField`. Set them in **Raw**
 
 ⛔ `tieBreak` is not optional here, although the schema treats it as optional. A field already holds a CrowdStrike value at priority 85. CrowdStrike reports a new value for it, also at priority 85. That is an exact tie, and the default resolves a tie by keeping what is there. The update is shadowed, and **CrowdStrike can never revise its own reading**. The value `newer` lets the incoming value win a tie, which is what an agent-reported field needs. A tie between two different sources cannot arise here, because no two mappings give the same target field the same priority.
 
-Then add the mappings. The shipped `crowdstrike-sync.json` holds the full set to copy from.
+Then add the mappings.
 
 | Source field | Target field | Mode | Priority |
 |---|---|---|---|
@@ -296,7 +323,7 @@ The asymmetry is deliberate. Jira wins on the business facts that only Jira hold
 | `masterDataset` | `consolidated-assets` |
 | `targetSource` | `jira-assets.prod` |
 
-⛔ `targetSource` must match the drain exactly. The queue is `outbox_<target source>`. The drain reads the queue named by the source string you give it. A mismatch drains an empty queue and reports success.
+⛔ `targetSource` must carry the instance. The queue is `outbox_<target source>`, and the write-back script in Part 5 drains `jira-assets.<instance>` for the instance you pass it. Name the source `jira-assets` here and the two do not meet: the drain reads an empty queue and reports success.
 
 The grid maps a master field to a source field. The right column holds the Jira field ids from Part 3.
 
@@ -325,40 +352,49 @@ The grid maps a master field to a source field. The right column holds the Jira 
 
 The value `review` puts every creation behind a person. The engine creates all fields for a host or none of them. It then writes the returned issue key into that master record's identity, and it never proposes the host again.
 
-### Load the rules
-
-The editor is one way to create a rule. To load rule files in bulk, see [Create and edit rules](/docs/prism/usage/manage-rules). The engine reads rules from storage, not from the JSON files. A file that you edit on disk changes nothing until you load it.
-
 ---
 
 ## Part 5 — Run the pipeline
 
+The collectors and the write-back are deployed Windmill scripts. Run one with the `wmill` CLI, or from **Run a script** in the review app. The rules and the reviews run in the review app.
+
 ### Inbound
 
-1. Collect. See [Run a collector](/docs/prism/usage/collect).
-2. Run `crowdstrike-sync`. See [Run a sync rule](/docs/prism/usage/sync).
-3. Review the changeset. See [Review and apply changesets](/docs/prism/usage/review-changesets).
-4. Repeat steps 1 to 3 for `jira-assets-sync`, once Jira holds issues to read.
+1. Collect from CrowdStrike.
+
+   ```bash
+   wmill script run f/prism/crowdstrike_collect --data '{
+     "crowdstrike_credentials": "$res:f/prism/crowdstrike_credentials",
+     "storage": "$res:f/prism/storage",
+     "instance": "prod"
+   }'
+   ```
+
+   **Expected output.** A completed job returning `success: true` with the instance you named. [Run a collector](/docs/prism/usage/collect) covers how to confirm that the snapshot landed.
+
+2. Run `crowdstrike-sync` from **Re-run a sync rule**. See [Run a sync rule](/docs/prism/usage/sync).
+3. Review the changeset in **Review pending changes**. See [Review and apply changesets](/docs/prism/usage/review-changesets).
+4. Repeat steps 1 to 3 for `f/prism/jira-assets_collect` and `jira-assets-sync`, once Jira holds issues to read. The Jira script takes `jira_credentials`, bound to `$res:f/prism/jira-assets_credentials`.
 
 On a first run, every host arrives as a new-asset proposal. The engine writes nothing to the consolidated dataset until a person approves it.
 
 ### Outbound
 
-5. Run `technical-to-jira`. The rule queues the changes. It writes nothing to Jira. Every mirror-create proposal waits for approval.
+5. Run `technical-to-jira` from **Re-run a sync rule**. The rule queues the changes and writes nothing to Jira. Every mirror-create proposal waits for approval.
 6. Approve the changes that should go out.
-7. Drain the queue. The drain calls the Jira API.
+7. Drain the queue. The write-back script calls the Jira API.
 
-⛔ **Do not use the shipped `prism-drain` command here.** It is a reference implementation with a dry-run writer. It contacts nothing and it writes nothing. It still marks every item as done. Run it against a real outbox and it consumes the queue while the summary reports the items as written.
+   ```bash
+   wmill script run f/prism/jira-assets_writeback --data '{
+     "jira_credentials": "$res:f/prism/jira-assets_credentials",
+     "storage": "$res:f/prism/storage",
+     "instance": "prod"
+   }'
+   ```
 
-The Jira connector supplies its own authenticated writer. Run it from the runtime instance:
+⛔ Pass the collector and the write-back the same instance. Each script resolves the source id `jira-assets.<instance>` on its own. A write-back given a different instance drains an empty queue and reports success.
 
-```bash
-node node_modules/@sightline/prism-connector-jira-assets/dist/writeback.js
-```
-
-The connector ships this entry point, but it declares no command name for it, so you name the file. Every other command on this page has a name because the connector declares one.
-
-Check the source id before the first drain. That entry point drains the source `jira-assets`. This page gives the reverse rule the target source `jira-assets.prod`, so the queue is `outbox_jira-assets.prod`. The two do not match. Align them before you drain. Name the instance-less source in the rule, or drain the instance-qualified queue from your own entry point. A mismatch here fails silently.
+The review app offers a second route for a source no script can reach. **Complete a source's pending write-backs** lists the queued items, downloads them, and records the ones you performed by hand. See [Run a write-back](/docs/prism/usage/write-back).
 
 ## Confirm the loop
 
@@ -367,20 +403,19 @@ Check the source id before the first drain. That entry point drains the source `
 3. Change that host's IP address by hand in Jira. Run `jira-assets-sync`. The engine shadows the change. It does not apply it, because CrowdStrike outranks Jira on the IP address.
 4. Run `technical-to-jira`. Drain the queue. Jira returns to the authoritative value.
 
-Step 3 is the one to watch. If the engine applies the change instead of shadowing it, the priorities in 4a and 4b do not match this page.
+Step 3 is the one to watch. If the engine applies the change instead of shadowing it, the priorities in 4a and 4b do not match this recipe.
 
-## What this page does not cover
+## After the first loop
 
-- **Running the pipeline from Windmill.** See [Installing Windmill-hosted Prism](/docs/prism/install/windmill). The rules and the mappings do not change. The review app drives them instead of the operator CLI.
-- **Schedules.** Nothing above runs on a timer.
-- **Decommissions.** Both sync rules set `reconcilePresence` to `false`. Turn it on once you trust the collector's coverage. See [rule 4a](#4a-crowdstrike-to-the-consolidated-dataset) for what the setting does.
-- **A second endpoint source.** Add another rule shaped like 4a, with its own priorities.
+- **Put the collectors on a schedule.** Nothing above runs on a timer. Windmill schedules a deployed script, and the two collector scripts are what to schedule.
+- **Turn on decommissions.** Both sync rules set `reconcilePresence` to `false`. Turn it on once you trust the collector's coverage. See [rule 4a](#4a-crowdstrike-to-the-consolidated-dataset) for what the setting does.
+- **Add a second endpoint source.** Install its connector, then add a rule shaped like 4a with its own priorities.
 
 ## Where to go next
 
 | Question | Document |
 |---|---|
-| How do I run this from Windmill? | [Installing Windmill-hosted Prism](/docs/prism/install/windmill) |
 | What does each review decision mean? | [Review and apply changesets](/docs/prism/usage/review-changesets) |
 | How does the engine decide a merge? | [Architecture overview](/docs/prism/architecture/overview) |
+| What else is in the review app? | [The review app](/docs/prism/usage/review-app) |
 | How do I add another connector? | [Writing a connector](/docs/prism/architecture/writing-a-connector) |
