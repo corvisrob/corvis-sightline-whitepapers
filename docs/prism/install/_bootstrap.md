@@ -124,7 +124,7 @@ Create the project, or use an existing one. Choose the issue type that represent
 
 The connector README carries the full table with each `fieldIds` key. See [Jira Assets Connector](/docs/prism/architecture/connectors/jira-assets) § Jira Setup.
 
-This pipeline needs five text fields.
+This pipeline needs six text fields.
 
 | Purpose | `fieldIds` key |
 |---|---|
@@ -132,6 +132,7 @@ This pipeline needs five text fields.
 | IP address | `ip` |
 | MAC address | `mac` |
 | Model | `model` |
+| Owner. Jira is authoritative for it, and rule 4b maps it. | `owner` |
 | Asset ID. Holds the Prism master record id. | `assetId` |
 
 Add each field to the project's screens. Jira accepts a field that is not on a screen, and then never shows it or returns it.
@@ -230,8 +231,11 @@ The grid does not hold the identity keys or `sourceIdField`. Set them in **Raw**
 ```json
 "sourceIdField": "id",
 "identityKeys": { "hostname": "hostname", "mac": "network.0.macAddress" },
-"reconcilePresence": false
+"reconcilePresence": false,
+"tieBreak": "newer"
 ```
+
+⛔ `tieBreak` is not optional here, although the schema treats it as optional. A field already holds a CrowdStrike value at priority 85. CrowdStrike reports a new value for it, also at priority 85. That is an exact tie, and the default resolves a tie by keeping what is there — so the update is shadowed, and **CrowdStrike can never revise its own reading**. The value `newer` lets the incoming value win a tie, which is what an agent-reported field needs. A tie between two different sources cannot arise here, because no two mappings give the same target field the same priority.
 
 Then add the mappings. The shipped `crowdstrike-sync.json` holds the full set to copy from.
 
@@ -262,10 +266,15 @@ Note the shape of a source field. It uses dots, and it indexes an array by posit
 | Target schema | `BaseAsset` |
 
 ```json
-"sourceIdField": "id",
+"sourceIdField": "extendedData.jiraIssueKey",
 "identityKeys": { "hostname": "extendedData.hostname" },
-"reconcilePresence": false
+"reconcilePresence": false,
+"tieBreak": "newer"
 ```
+
+⛔ `sourceIdField` must be `extendedData.jiraIssueKey`, not `id`. The value it names becomes the native id in the master's cross-reference, and rule 4c addresses its write-back by that native id. The Jira collector sets `id` to the Asset ID field and falls back to the issue key only while that field is empty — so `id` is the issue key until the first write-back populates Asset ID, and the Prism master id from then on. A rule that keys on `id` therefore works, pushes once, and then addresses every later write to an issue key that does not exist. Naming the issue key directly does not move.
+
+`tieBreak` is set for the same reason as [rule 4a](#4a-crowdstrike-to-the-consolidated-dataset): without it Jira cannot revise a field it already owns, such as the owner.
 
 `extendedData.hostname` holds the Host Name field from Part 3. The match on it joins a Jira issue to the machine that CrowdStrike already reports. Without it, Jira creates a second master record.
 
