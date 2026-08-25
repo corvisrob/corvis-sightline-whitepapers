@@ -26,9 +26,9 @@ The second and third rules make a loop rather than two one-way feeds. Jira's sta
 
 ## Before you start
 
-Read [Prerequisites](/docs/prism/install/prerequisites). Then read [Installing Prism](/docs/prism/install/prism) and [The runtime instance](/docs/prism/install/runtime-instance).
+Read [Prerequisites](/docs/prism/install/prerequisites). Then read [Installing Standalone Prism](/docs/prism/install/prism) and [The runtime instance](/docs/prism/install/runtime-instance).
 
-Every command on this page runs from a runtime instance. It does not run from the code checkout. [The runtime instance](/docs/prism/install/runtime-instance) explains why, and this is the most common early mistake.
+Every command on this page runs from a runtime instance. It does not run from the directory you installed from. [The runtime instance](/docs/prism/install/runtime-instance) explains why, and this is the most common early mistake.
 
 Arrange three things first:
 
@@ -42,7 +42,7 @@ You create the Jira project, its issue type and its custom fields. Part 3 names 
 
 ## Part 1 — PostgreSQL
 
-Read [Storage backends](/docs/prism/install/storage-backends) first. It is the authority on the variables and on what each backend costs you.
+Read [Storage backends](/docs/prism/install/storage-backends) for how to set up PostgreSQL.
 
 Set two variables for this pipeline:
 
@@ -71,7 +71,7 @@ Confirm the backend before you go on. Every command that touches storage names t
 
 ## Part 2 — CrowdStrike
 
-The connector README is the authority on its configuration, its regional base URLs and its required API scopes. See [CrowdStrike Falcon Connector](/docs/prism/architecture/connectors/crowdstrike).
+Read [CrowdStrike Falcon Connector](/docs/prism/architecture/connectors/crowdstrike) for the regional base URL your tenant needs and the API scopes to grant.
 
 The connector reads its `.env` from its own folder. It does not read the repository root, and it does not read the runtime instance:
 
@@ -341,11 +341,13 @@ On a first run, every host arrives as a new-asset proposal. The engine writes no
 
 ⛔ **Do not use the shipped `prism-drain` command here.** It is a reference implementation with a dry-run writer. It contacts nothing and it writes nothing. It still marks every item as done. Run it against a real outbox and it consumes the queue while the summary reports the items as written.
 
-The Jira connector supplies its own authenticated writer. Use it:
+The Jira connector supplies its own authenticated writer. Run it from the runtime instance:
 
 ```bash
-npx tsx packages/connectors/jira-assets/writeback.ts
+node node_modules/@sightline/prism-connector-jira-assets/dist/writeback.js
 ```
+
+The connector ships this entry point, but it declares no command name for it, so you name the file. Every other command on this page has a name because the connector declares one.
 
 Check the source id before the first drain. That entry point drains the source `jira-assets`. This page gives the reverse rule the target source `jira-assets.prod`, so the queue is `outbox_jira-assets.prod`. The two do not match. Align them before you drain. Name the instance-less source in the rule, or drain the instance-qualified queue from your own entry point. A mismatch here fails silently.
 
@@ -360,16 +362,16 @@ Step 3 is the one to watch. If the engine applies the change instead of shadowin
 
 ## What this page does not cover
 
-- **Running the pipeline from Windmill.** See [Installing the Windmill layer](/docs/prism/install/windmill). The rules and the mappings do not change. The review app drives them instead of the CLI.
+- **Running the pipeline from Windmill.** See [Installing Windmill-hosted Prism](/docs/prism/install/windmill). The rules and the mappings do not change. The review app drives them instead of the operator CLI.
 - **Schedules.** Nothing above runs on a timer.
-- **Decommissions.** Both sync rules set `reconcilePresence` to `false`. Turn it on once you trust the collector's coverage. Read what the outage guard does first.
+- **Decommissions.** Both sync rules set `reconcilePresence` to `false`. Turn it on once you trust the collector's coverage. See [rule 4a](#4a-crowdstrike-to-the-consolidated-dataset) for what the setting does.
 - **A second endpoint source.** Add another rule shaped like 4a, with its own priorities.
 
 ## Where to go next
 
 | Question | Document |
 |---|---|
-| How do I run this from Windmill? | [Installing the Windmill layer](/docs/prism/install/windmill) |
+| How do I run this from Windmill? | [Installing Windmill-hosted Prism](/docs/prism/install/windmill) |
 | What does each review decision mean? | [Review and apply changesets](/docs/prism/usage/review-changesets) |
 | How does the engine decide a merge? | [Architecture overview](/docs/prism/architecture/overview) |
 | How do I add another connector? | [Writing a connector](/docs/prism/architecture/writing-a-connector) |

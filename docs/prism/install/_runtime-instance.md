@@ -2,21 +2,23 @@ Read this page before you run any install command. It explains the one idea that
 
 ## Two directories, and only one of them runs commands
 
-Sightline Prism separates the code from the thing you operate.
+Sightline Prism separates what you install from what you operate.
 
-A **code checkout** is a clone of one of the three repositories. Code lives here. Operational commands do **not** run from here.
+The **install directory** holds the installer and the archive it reads. Nothing you operate lives here, and operational commands do **not** run from here.
 
-A **runtime instance** is a directory created by `install/install.sh --dir <path>`. It holds the environment file, the data directory, the connector manifests and the rule instances. Operational commands run from here.
+A **runtime instance** is a directory created by `node install.mjs --dir <path>`. It holds the environment file, the data directory, the connector manifests and the rule instances. Operational commands run from here.
 
-You do not install Prism by cloning the repository and running it in place. The installer reads the checkout and writes a runtime instance somewhere else.
+The installer reads its own directory and writes a runtime instance somewhere else.
 
 ```
 your-parent-directory/
-├── sightline-prism/          the code checkout — the installer reads this
-└── acme-prism/               the runtime instance — you run commands here
+├── prism-install/            install.mjs + the archive - the installer reads this
+└── acme-prism/               the runtime instance - you run commands here
 ```
 
-**One checkout can create many runtime instances.** A collector node and a central node are two instances built from the same code.
+**One install directory can create many runtime instances.** A collector node and a central node are two instances built from the same archive.
+
+A contributor who works from a `sightline-prism` **code checkout** meets the same rule. The checkout is where the code lives, and it is never where a command runs.
 
 ## What the installer puts in a runtime instance
 
@@ -51,7 +53,7 @@ A connector manifest sits at `.connectors/<type>.<instance>/manifest.json`. It n
 
 A collector node runs near a data source. A central node runs the sync engine and the review TUI. Give each one its own directory.
 
-The remaining flags choose the packages and where they come from. They are in [Installing Prism](/docs/prism/install/prism).
+The remaining flag, `--connectors`, chooses which connectors to install. [Installing Standalone Prism](/docs/prism/install/prism) covers it.
 
 ## Why the commands must run from the instance
 
@@ -73,20 +75,22 @@ cd acme-prism
 npx prism-sync <rule-id>
 ```
 
-## What goes wrong when you run from the checkout
+## What goes wrong when you run from the install directory
 
 **The commands do not tell you that you are in the wrong directory.** Read this section before you meet the problem.
 
-A code checkout has no `.env`, no `.connectors/` and no `rules/`. Each of the four lookups above therefore fails on its own terms:
+The install directory holds `install.mjs` and the archive. It has no `.env`, no `.connectors/` and no `rules/`, because the installer wrote all three somewhere else. Each of the four lookups above therefore fails on its own terms:
 
 | What you did | What you see |
 |---|---|
-| Ran a collector from the checkout | Missing-credential errors, because no `.env` was loaded. |
-| Listed connector instances from the checkout | An empty list. The loader treats a missing `.connectors/` as no instances, and reports no error. |
-| Ran a sync from the checkout | The rule is not found, although the rule exists in your instance. |
-| Ran a collector with the local backend | A new, empty `.data` directory appears in your checkout. |
+| Ran a collector from the install directory | Missing-credential errors, because no `.env` was loaded. |
+| Listed connector instances from it | An empty list. The loader treats a missing `.connectors/` as no instances, and reports no error. |
+| Ran a sync from it | The rule is not found, although the rule exists in your instance. |
+| Ran a collector with the local backend | A new, empty `.data` directory appears beside the installer. |
 
 The last one is the most confusing. Nothing failed. The collector wrote a real snapshot to a real store — the wrong one. Your instance's data is untouched, and it looks like the collection did nothing.
+
+A contributor working from a code checkout meets all four the same way, and for the same reason.
 
 If a command behaves as though your configuration does not exist, check the working directory before you check anything else.
 
@@ -95,6 +99,6 @@ If a command behaves as though your configuration does not exist, check the work
 | Question | Document |
 |---|---|
 | What must be present first? | [Prerequisites](/docs/prism/install/prerequisites) |
-| How do I create an instance? | [Installing Prism](/docs/prism/install/prism) |
+| How do I create an instance? | [Installing Standalone Prism](/docs/prism/install/prism) |
 | How do I install the operator CLI? | [Installing the CLI](/docs/prism/install/cli) |
 | Where does the data go? | [Storage backends](/docs/prism/install/storage-backends) |

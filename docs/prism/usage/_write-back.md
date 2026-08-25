@@ -51,6 +51,24 @@ Each line it prints is tagged as a dry run, and the opening line says so too. Th
 
 **A production write-back needs a connector that supplies its own writer**, backed by its authenticated API client. A connector does that by using the drain routine from the SDK and passing that writer in. Until a connector does that for your source, treat the queue as unattended and do not drain it.
 
+## Half two, by hand: the review app's Outbox
+
+**When no connector can reach the source, the queue is still actionable — by a person.** The review app's **Outbox** entry lists every source that has an outbox and how many writes are queued for it, shows each queued write in full, and downloads the lot as JSON.
+
+Nothing on that screen reaches your source system. The app holds no source credentials and no connectivity; it reads the queue and it records outcomes. The sequence is:
+
+1. Open **Outbox**, pick the source, and read or download its pending items. Each one names the record to change, the field, and the value.
+2. Perform those writes yourself, in the source system.
+3. Come back, tick the items you actually performed, and press **Mark done**.
+
+**Marking an item done is a claim, not an action.** It records that the write has already happened at the source — which is exactly what the completion guarantee below is about, and exactly the thing the dry-run drain gets wrong. Tick nothing you did not do.
+
+An item you could not perform is best left alone. `pending` is already the correct state for a write that has not happened: nothing has been consumed, and the item is still there next time. The app deliberately offers no way to mark an item `failed` — that status exists so a connector can record an error its API returned, which is not something a person clicking a button knows.
+
+A `create` item needs one extra thing: the native id the source gave the record you provisioned. Enter it beside that row before marking it done, or the engine has no way to link the new record back to the master.
+
+**[The review app](/docs/prism/usage/review-app)** covers where the entry is.
+
 ## The completion guarantee
 
 When a real writer is in place, the guarantee is worth knowing.

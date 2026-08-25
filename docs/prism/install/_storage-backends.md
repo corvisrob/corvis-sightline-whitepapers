@@ -10,7 +10,7 @@ Set `STORAGE_BACKEND` in the [runtime instance](/docs/prism/install/runtime-inst
 |---|---|---|
 | `mongo` | MongoDB | A shared installation, a Windmill deployment, or more than one process. |
 | `postgres` | PostgreSQL | A shared installation where your organisation already runs PostgreSQL and would rather not add MongoDB. Safe for more than one process. |
-| `local` | Local JSON store | A workstation trial, a single-operator CLI installation, or a standalone node. |
+| `local` | Local JSON store | A workstation trial, or a node that one operator runs on their own machine. |
 
 **`mongo` is the default.** The runtime uses MongoDB when `STORAGE_BACKEND` is unset.
 
@@ -27,7 +27,7 @@ The value is not case-sensitive, so `Local` and `LOCAL` work too.
 
 Both variables have a built-in default that points at a MongoDB on the same machine. **Set both explicitly.** A default that silently works on a workstation is the thing that fails without explanation on a server.
 
-The Windmill layer does not read these variables. It reads a Windmill resource instead, which its own installer creates — see [Installing the Windmill layer](/docs/prism/install/windmill).
+Windmill-hosted Prism does not read these variables. It reads a Windmill resource instead, which its own installer creates. See [Installing Windmill-hosted Prism](/docs/prism/install/windmill) for how the installer creates it.
 
 ## The PostgreSQL backend
 
@@ -76,11 +76,11 @@ The local store is a zero-dependency backend that writes one JSON file for each 
 |---|---|---|
 | `PRISM_DATA_DIR` | Where the JSON files go. | A `.data` directory in the current directory. |
 
-The default resolves against the **current working directory**, not against the code checkout. This is one of the reasons operational commands run from the runtime instance. Read [The runtime instance](/docs/prism/install/runtime-instance) for the rest.
+The default resolves against the **current working directory**, not against the directory you installed from. This is one of the reasons operational commands run from the runtime instance. Read [The runtime instance](/docs/prism/install/runtime-instance) for the rest.
 
 ### The local store runs one process at a time
 
-**The local store is single-process.** It is intended for CLI use, local development and standalone operation. It is not built for concurrent workers, and the Windmill layer must not use it.
+**The local store is single-process.** It is intended for one operator on one machine, and for local development. It is not built for concurrent workers, and Windmill-hosted Prism must not use it.
 
 Two processes writing to the same local store at the same time can lose a write. There is no lock between them. When more than one process needs the data, use MongoDB or PostgreSQL.
 
@@ -105,7 +105,7 @@ So the choice is about where the data lives and how many processes reach it. It 
 | Do the connectors change? | No |
 | Does the sync engine change? | No |
 | Does the operator CLI change? | No |
-| Does the Windmill layer have a choice? | No. It uses MongoDB. |
+| Does Windmill-hosted Prism have a choice? | Yes, between MongoDB and PostgreSQL. The local store is not an option. |
 
 ## Verify the backend in use
 
@@ -133,6 +133,6 @@ ls .data/
 | Question | Document |
 |---|---|
 | What is a runtime instance? | [The runtime instance](/docs/prism/install/runtime-instance) |
-| How do I install Prism? | [Installing Prism](/docs/prism/install/prism) |
-| How do I install the Windmill layer? | [Installing the Windmill layer](/docs/prism/install/windmill) |
+| How do I install Prism? | [Installing Standalone Prism](/docs/prism/install/prism) |
+| How do I install the Windmill hosting? | [Installing Windmill-hosted Prism](/docs/prism/install/windmill) |
 | How does the data model work? | [Data model](/docs/prism/architecture/data-model) |

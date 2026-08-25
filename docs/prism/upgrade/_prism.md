@@ -1,6 +1,6 @@
 An upgrade moves an existing [runtime instance](/docs/prism/install/runtime-instance) to a newer version of Prism. It does not move your configuration or your data — those stay where they are, and this page tells you exactly which of them survive.
 
-Read [Version compatibility](/docs/prism/upgrade/compatibility) before you start.
+Read [Version compatibility](/docs/prism/upgrade/compatibility) for what the target Prism version is coupled to.
 
 ## What the instance holds
 
@@ -32,17 +32,12 @@ If you use the MongoDB backend, your records are in MongoDB and this copies conf
 
 The upgrade re-runs the installer against the same runtime instance.
 
-1. Update the code checkout to the version you are moving to.
+1. Replace `sightline-prism-latest.tar.gz` in your install directory with the archive for the version you are moving to. Corvis supplies it.
 2. Re-run the installer with the same `--dir` and the same `--role` and `--connectors` you used before.
 
 ```bash
-cd sightline-prism
-git fetch --tags
-git checkout <target-version>
-npm install
-npm run build
-
-./install/install.sh --dir ../acme-prism --role central --connectors crowdstrike,jira-assets
+cd prism-install
+node install.mjs --dir ../acme-prism --role central --connectors crowdstrike,jira-assets
 ```
 
 **Pass the same flags you installed with.** The installer resolves the package list from `--role` and `--connectors` on each run. A connector you leave off the list is not removed. It is also not upgraded, so it stays on the old version while everything around it moves.

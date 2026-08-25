@@ -1,6 +1,8 @@
-Prism for Windmill schedules collections and presents the review operations in a browser. It is a separate repository, `sightline-prism-windmill`, deployed into a Windmill workspace.
+Windmill-hosted Prism schedules the collections and presents the review operations in a browser. It deploys into a Windmill workspace from a repository of its own, `sightline-prism-windmill`.
 
-It adds orchestration and a browser interface. It does not add a second engine — it calls the same one.
+It adds orchestration and a browser interface. It does not add a second engine. It calls the same one, deploys the same connectors, and records the same decisions as a terminal does.
+
+This is one of the two hostings of a single product, not a second product. [Architecture overview](/docs/prism/architecture/overview) covers the pair. Choosing it does not take the operator CLI away: the CLI reads and writes a Windmill-hosted store like any other.
 
 ## What it is made of
 
@@ -43,15 +45,17 @@ Two things about that configuration are worth knowing before you deploy.
 
 ## It requires a shared backend
 
-**The Windmill deployment uses MongoDB or PostgreSQL.** Its storage resource names one of the two and carries that backend's connection details. The local JSON store is a single-process backend intended for a workstation, the CLI and standalone use. It is not an option here.
+**Windmill-hosted Prism uses MongoDB or PostgreSQL.** Its storage resource names one of the two and carries that backend's connection details. The local JSON store is a single-process backend, intended for a workstation and for a single operator. It is not an option here.
 
-If you tried Prism on a workstation with the local store, that data does not carry over. The backends do not share data. See [Overview](/docs/prism/architecture/overview).
+If you tried Prism on a workstation with the local store, that data does not carry over. The backends do not share data. See [Overview](/docs/prism/architecture/overview) for the backends Prism supports.
 
 ## The review app and the review TUI
 
-The review app presents the same six operations as the terminal interface in Prism CLI, entry for entry: reviewing pending changes, browsing changesets, browsing a dataset's records, re-running a rule, managing deferrals, and managing rules.
+The review app presents the same six operations as the terminal interface of the operator CLI: reviewing pending changes, browsing changesets, browsing a dataset's records, re-running a rule, managing deferrals, and managing rules.
 
 They are not two products with different capabilities. They are two front ends over one engine. Choose by where your operator is.
+
+The review app adds two entries the terminal has no equivalent for. Both exist to cover a source whose connector cannot run, and [the review app](/docs/prism/usage/review-app) describes them.
 
 The procedures are written once, in the usage documentation: [Reviewing changesets](/docs/prism/usage/review-changesets) and [the review app](/docs/prism/usage/review-app).
 
@@ -59,7 +63,7 @@ The procedures are written once, in the usage documentation: [Reviewing changese
 
 | Question | Document |
 |---|---|
-| How do I install it? | [Installing the Windmill layer](/docs/prism/install/windmill) |
-| How do I upgrade it? | [Upgrading the Windmill layer](/docs/prism/upgrade/windmill) |
+| How do I install it? | [Installing Windmill-hosted Prism](/docs/prism/install/windmill) |
+| How do I upgrade it? | [Upgrading Windmill-hosted Prism](/docs/prism/upgrade/windmill) |
 | How do I use the review app? | [Review app](/docs/prism/usage/review-app) |
 | What does the engine do with what it collects? | [Sync engine](/docs/prism/architecture/sync-engine) |

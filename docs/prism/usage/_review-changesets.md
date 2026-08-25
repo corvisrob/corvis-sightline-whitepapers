@@ -9,7 +9,7 @@ npx prism-review
 
 Choose **Review pending changes** from the menu.
 
-The same operations are available in a browser through the Windmill layer — see [The review app](/docs/prism/usage/review-app).
+The same operations are available in a browser, in Windmill-hosted Prism. See [The review app](/docs/prism/usage/review-app) for where each operation is in the browser.
 
 ## What you are looking at
 

@@ -1,11 +1,6 @@
-How you upgrade the operator CLI depends on how you installed it. The two paths are not variations of each other — one needs a second checkout and the other does not.
+The operator CLI upgrades with the rest of the node. It travels inside the install archive, so a newer archive carries a newer CLI.
 
-Read [Version compatibility](/docs/prism/upgrade/compatibility) before you start. It tells you what the target version is coupled to.
-
-| How you installed it | Path to follow |
-|---|---|
-| From a release, into a [runtime instance](/docs/prism/install/runtime-instance) | [Upgrade a released CLI](#upgrade-a-released-cli) |
-| From source, in its own checkout | [Upgrade a CLI built from source](#upgrade-a-cli-built-from-source) |
+Read [Version compatibility](/docs/prism/upgrade/compatibility) for what the target version is coupled to.
 
 ## The pairing check comes first
 
@@ -17,63 +12,28 @@ The honest answer is often "nobody can tell you from the artifact". No release r
 
 **Do not infer the pairing from version numbers.** The three products number independently. A matching major and minor tells you nothing about what was compiled in.
 
-## Upgrade a released CLI
+## Upgrade the CLI
 
-A released CLI needs no `sightline-prism` checkout. The engine travels inside the tarball.
-
-The CLI is installed into a runtime instance, so the upgrade runs the Prism installer again against that same instance.
+The CLI is installed into a runtime instance, so the upgrade runs the installer again against that same instance.
 
 1. Confirm the pairing, as above.
-2. Change into the code checkout that holds the installer.
+2. Put the archive for the target version in your install directory. Corvis supplies it.
 3. Re-run the installer against your existing runtime instance.
 
 ```bash
-cd sightline-prism
-./install/install.sh --dir ../acme-central --role central --source npm --registry <your-registry>
+cd prism-install
+node install.mjs --dir ../acme-central --role central --connectors crowdstrike
 ```
+
+**Pass the same `--connectors` you installed with.** The installer resolves the package list on each run, and a connector you leave off is not upgraded.
 
 The installer does not overwrite your `.env`, your connector manifests or your rules. It replaces the installed packages. [Upgrading Prism](/docs/prism/upgrade/prism) lists exactly what survives.
 
 Then [verify the version](#verify-the-version).
 
-## Upgrade a CLI built from source
+## Building from source
 
-Building from source needs two checkouts side by side, and **the order is not optional**.
-
-Follow these four steps in this order.
-
-1. Confirm the pairing, as above.
-2. Update the `sightline-prism` sibling checkout to the version you intend to pair with.
-3. Rebuild the sibling.
-4. Update and rebuild the CLI.
-
-```bash
-cd sightline-prism
-git fetch --tags
-git checkout <target-version>
-npm install
-npm run build
-
-cd ../sightline-prism-cli
-git fetch --tags
-git checkout <target-version>
-npm install
-npm run build
-```
-
-Step 3 is the one people skip. The CLI reads the sibling's **compiled output**, not its source, so a sibling you updated but did not rebuild still serves the old engine.
-
-### What the wrong order looks like
-
-An unbuilt or unrebuilt sibling does not tell you to rebuild the sibling. It produces **module-not-found errors** naming packages you can see on disk:
-
-- `@sightline/prism-engine`
-- `@sightline/prism-connector-sdk`
-- `@sightline/prism-review-core`
-
-The error sends you to look for a missing dependency, and nothing is missing. Go back to the sibling and run `npm run build`.
-
-A **stale** sibling build is the quieter failure. The build inlines the sibling's compiled output, so an out-of-date build would be compiled into the CLI with nothing to show for it. The build guards against this: it stops when a sibling has no build at all, and warns when a sibling's source is newer than its build. **Read those warnings.** They are the only signal that the engine you just compiled in is not the engine you checked out.
+A contributor who upgrades a CLI they built from source has a different procedure. It needs two checkouts in a set order, and the `CONTRIBUTING.md` file in the source repository covers it.
 
 ## Verify the version
 
@@ -102,7 +62,7 @@ A missing entry point means the install did not complete. Re-run the installer a
 
 Releases are produced by a continuous-integration workflow, not from a developer workstation. A workstation can bundle a file that was never committed. An automated build starts from a clean checkout, so it cannot.
 
-Each release is a versioned tarball attached to a release. The workflow runs the type checker and the full test suite against the exact engine build it packs. A build that fails either check is never published.
+The workflow runs the type checker and the full test suite against the exact engine build it packs. A build that fails either check is never published.
 
 ## Where to go next
 

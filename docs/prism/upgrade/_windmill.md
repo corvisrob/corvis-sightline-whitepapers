@@ -1,8 +1,8 @@
-The Windmill layer upgrades through its own updater, `install/update.sh`, in the Windmill repository. The updater refreshes the layer's content from the current gold master and leaves your deployment state alone.
+Windmill-hosted Prism upgrades through its own updater, `update.mjs`. The updater refreshes the deployment's content from a newer archive and leaves your deployment state alone.
 
-Read [Version compatibility](/docs/prism/upgrade/compatibility) before you start.
+Read [Version compatibility](/docs/prism/upgrade/compatibility) for what the target Windmill layer is coupled to.
 
-**Every path on this page is in the Windmill repository, not in the Prism one.**
+**The updater and its archive sit together in one directory**, the way an install does. Every other path on this page is inside the deployment directory you name with `--dir`.
 
 
 ## Upgrading to 3.0.0 is a breaking change
@@ -11,7 +11,7 @@ Read [Version compatibility](/docs/prism/upgrade/compatibility) before you start
 
 The updater does not do this for you, because it never touches your resources - that is what keeps your credentials through an upgrade.
 
-1. Create the new resource. Either run `node install/setup-resource.mjs storage <install-dir> <gold-master-dir>`, or lift your existing `f/prism/mongodb` value into a `prism_storage` resource at `f/prism/storage`. Lifting it keeps the `$var:` password reference, so you do not re-enter the secret.
+1. Create the new resource. Either run `node install/setup-resource.mjs storage <install-dir> <archive-dir>`, or lift your existing `f/prism/mongodb` value into a `prism_storage` resource at `f/prism/storage`. Lifting it keeps the `$var:` password reference, so you do not re-enter the secret.
 2. Push the resource type, then the resource, then the scripts, then the app - in that order. A script deployed before its resource exists has nothing to bind.
 3. Rebind any schedule or trigger that passed `mongodb`. The field is now `storage`.
 
@@ -25,30 +25,33 @@ Read [Storage backends](/docs/prism/install/storage-backends) before choosing Po
 
 The updater refreshes an **existing** install. It is not a first-time install.
 
-It stops when the target directory has no `f/` directory or no `wmill.yaml`, and tells you to use the installer instead. [Installing the Windmill layer](/docs/prism/install/windmill) covers that path.
+It stops when the target directory has no `f/` directory or no `wmill.yaml`, and tells you to use the installer instead. [Installing Windmill-hosted Prism](/docs/prism/install/windmill) covers that path.
 
-You also need the current gold master. Corvis distributes it privately — ask for access. An access token, supplied as `SIGHTLINE_TOKEN`, lets the updater fetch it without a checkout.
+You also need the archive for the version you are moving to. Corvis supplies it, with the updater beside it, exactly as it supplies an install. The updater reads the archive from its own directory and downloads nothing.
 
 ## The flags
 
 ```bash
-./install/update.sh --dir ../acme-prism-windmill
+node update.mjs --dir ../acme-prism-windmill
 ```
 
 | Flag | What it does | Required |
 |---|---|---|
 | `--dir` | The existing install to refresh. | Yes. The updater stops without it. |
+| `--archive` | Which archive to refresh from. Defaults to the latest. | No |
 | `--dry-run` | Shows the file changes and stops. Changes nothing. | No |
 | `--help` | Prints the usage. `-h` also works. | No |
 
 That is the whole list. The updater takes no other flag.
+
+`--archive` names a file beside the updater, or a path. It is how you refresh from a named version rather than the latest archive.
 
 ## ⚠️ Run the dry run first
 
 **A dry run is available and worth the minute it costs.** It is the only way to see what a release retires from your install before it goes — see [What the updater deletes](#what-the-updater-deletes).
 
 ```bash
-./install/update.sh --dir ../acme-prism-windmill --dry-run
+node update.mjs --dir ../acme-prism-windmill --dry-run
 ```
 
 **Expected output.** An itemised list of the files the updater would add, change and **delete**, followed by a line stating that nothing changed. Read the deletions.
@@ -57,13 +60,13 @@ The dry run stops after the file listing. It does not go on to preview the deplo
 
 ## What is preserved and what is replaced
 
-The updater replaces gold-master content and protects deployment-specific state.
+The updater replaces archive content and protects deployment-specific state.
 
-**Replaced** — refreshed from the gold master:
+**Replaced** — refreshed from the archive:
 
 | Path | What it holds |
 |---|---|
-| `f/` | The review-app scripts, and the gold master's own collector script |
+| `f/` | The review-app scripts, and the archive's own collector script |
 | `windmill/` | The collector templates |
 | `vendor/` | The compiled engine, connector SDK, review logic and connectors |
 
@@ -84,13 +87,13 @@ Your credentials survive an upgrade. You do not re-enter them.
 
 ## What the updater deletes
 
-The refresh is a mirror, not a merge. Anything under `f/`, `windmill/` or `vendor/` that the gold master does not carry — and that is not on the preserved list above — **is deleted**.
+The refresh is a mirror, not a merge. Anything under `f/`, `windmill/` or `vendor/` that the archive does not carry — and that is not on the preserved list above — **is deleted**.
 
 That is deliberate, and it is what the dry run is for: it is how a script this release retires leaves your install, and how the previous release's engine chunks leave `vendor/`.
 
 **Your own deployment state is not in that set.** The updater does not work from a fixed list of files to spare. It reads the install: your storage resource, every connector credential resource, and every collector script the installer put there. Set a connector up and it keeps both halves — the credentials and the script they drive — through every later refresh.
 
-A collector script the gold master does not ship is always yours, so it is always kept — including one left behind by a connector setup you interrupted before entering its credentials. The one collector the gold master does ship, for `jira-assets`, is kept when you have that connector set up here and refreshed from the gold master when you do not.
+A collector script the archive does not ship is always yours, so it is always kept — including one left behind by a connector setup you interrupted before entering its credentials. The one collector the archive does ship, for `jira-assets`, is kept when you have that connector set up here and refreshed from the archive when you do not.
 
 ### Restoring a collector script an older updater deleted
 
@@ -106,7 +109,7 @@ Remove the credential resource first, then re-run the installer for that connect
 cd ../acme-prism-windmill
 rm f/prism/<connector>_credentials.resource.yaml
 cd ../sightline-prism-windmill
-./install/install.sh --dir ../acme-prism-windmill --connectors <connector>
+node install/install.mjs --dir ../acme-prism-windmill --connectors <connector>
 ```
 
 A missing `f/prism/storage.resource.yaml` is recovered the same way the [3.0.0 migration](#upgrading-to-300-is-a-breaking-change) creates one. The updater now refuses to run at all until it is back.
@@ -154,6 +157,6 @@ ls f/prism/*_credentials.resource.yaml f/prism/*_collect.ts
 | Question | Document |
 |---|---|
 | Which combination should I move to? | [Version compatibility](/docs/prism/upgrade/compatibility) |
-| How do I install this layer for the first time? | [Installing the Windmill layer](/docs/prism/install/windmill) |
+| How do I install this hosting for the first time? | [Installing Windmill-hosted Prism](/docs/prism/install/windmill) |
 | Can I go back? | [Rollback](/docs/prism/upgrade/rollback) |
 | What happens to my existing records? | [Schema versions and rule migration](/docs/prism/upgrade/schema-migration) |

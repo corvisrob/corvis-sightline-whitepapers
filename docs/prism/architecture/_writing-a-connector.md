@@ -58,7 +58,7 @@ Your connector's type is its directory name. It must be lowercase, and may conta
 
 ### 3. Declare your credentials as references
 
-A manifest names an environment variable for each credential. It never holds the value. See [Connector model](/docs/prism/architecture/connector-model).
+A manifest names an environment variable for each credential. It never holds the value. See [Connector model](/docs/prism/architecture/connector-model) for what the manifest holds.
 
 Decide which variables your connector needs and document their names. Choose names that say which system they belong to.
 

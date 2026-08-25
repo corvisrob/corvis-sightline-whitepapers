@@ -1,6 +1,6 @@
-The review app is the browser interface to the same operations the operator CLI provides. It runs in your Windmill workspace.
+The review app is the browser interface to the same operations the operator CLI provides. It runs in your Windmill workspace, and it is one of the two interfaces to a single product rather than a product of its own.
 
-**It mirrors the review TUI entry for entry.** The same six operations, the same decisions, the same effects on your data.
+**It mirrors the review TUI closely, but no longer entry for entry.** The same decisions and the same effects on your data — plus two operations the terminal has no equivalent for, because they exist to cover a source whose connector cannot run.
 
 **This page tells you where each operation is. It does not repeat the procedures** — those are written once, for both interfaces, and linked below. Following a stale second copy is exactly the failure this structure avoids.
 
@@ -8,7 +8,7 @@ Choose by where the operator is, not by capability. Someone on a jump host uses 
 
 ## Getting there
 
-Open your Windmill workspace and start the review app. [Installing the Windmill layer](/docs/prism/install/windmill) covers deploying it; [Upgrading the Windmill layer](/docs/prism/upgrade/windmill) covers moving it forward.
+Open your Windmill workspace and start the review app. [Installing Windmill-hosted Prism](/docs/prism/install/windmill) covers deploying it; [Upgrading Windmill-hosted Prism](/docs/prism/upgrade/windmill) covers moving it forward.
 
 The app reads the same store as the CLI. A changeset you leave pending in one appears in the other.
 
@@ -22,10 +22,13 @@ The app reads the same store as the CLI. A changeset you leave pending in one ap
 | **Re-run a sync rule** | Run one rule now, including a rule with a remote target | [Run a sync rule](/docs/prism/usage/sync) · [Run a write-back](/docs/prism/usage/write-back) |
 | **Manage deferrals** | Browse and remove permanent suppressions | [Manage deferrals](/docs/prism/usage/deferrals) |
 | **Manage rules** | Enable, disable, edit and create rules | [Create and edit rules](/docs/prism/usage/manage-rules) |
+| **Run a script** | Run a deployed collector or write-back script and see its result | [Run a collector](/docs/prism/usage/collect) · [Run a write-back](/docs/prism/usage/write-back) |
+| **Upload a document into a source's inbox** | Put a JSON document into a remote source's inbox by hand, for a source whose collector cannot run | No terminal equivalent — see below |
+| **Complete a source's pending write-backs** | Read a source's queued writes, download them, and mark the ones you performed as done | [Run a write-back](/docs/prism/usage/write-back) |
 
 ## What differs from the CLI
 
-The decisions and their effects are identical. Two practical differences are worth knowing.
+The decisions and their effects are identical. A few practical differences are worth knowing.
 
 **There are no key bindings.** The procedures name keys such as `a`, `r`, `d` and `D` because the terminal needs them. In the browser you click the equivalent control. The decision each one records is the same, and the distinction between reject, decline and decline-field matters just as much.
 
@@ -33,12 +36,14 @@ The decisions and their effects are identical. Two practical differences are wor
 
 **Creating a rule does not ask which kind.** [Create and edit rules](/docs/prism/usage/manage-rules) says `n` asks for sync or reverse before the form. In the app there is no such step: pick the target dataset and the direction follows it, exactly as it does at run time — a local target merges, a remote one pushes. The app only asks when it cannot tell, which means the target is not in the table registry. The rule you end up with is the same either way.
 
+**Two entries have no terminal counterpart.** **Upload a document into a source's inbox** and **Complete a source's pending write-backs** both exist for a source that no connector can reach — one puts data in, the other takes the queued writes out. The CLI has no command for either; the screens carry their own guidance, and [Run a write-back](/docs/prism/usage/write-back) explains what completing a write-back does and does not mean.
+
 Everything else in the linked procedures reads the same in either interface.
 
 ## Where to go next
 
 | Question | Document |
 |---|---|
-| How do I install this layer? | [Installing the Windmill layer](/docs/prism/install/windmill) |
-| What is the terminal equivalent? | [Operator CLI](/docs/prism/architecture/cli) |
+| How do I install this layer? | [Installing Windmill-hosted Prism](/docs/prism/install/windmill) |
+| What is the terminal equivalent? | [The operator CLI](/docs/prism/architecture/cli) |
 | How do I start from nothing? | [First run](/docs/prism/usage/quickstart) |

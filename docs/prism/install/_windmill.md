@@ -1,8 +1,8 @@
-The Windmill layer runs the collectors and the review app inside a Windmill workspace. It installs into a Windmill repository directory, not into a Prism [runtime instance](/docs/prism/install/runtime-instance).
+Windmill-hosted Prism runs the collectors and the review app inside a Windmill workspace. It installs into a Windmill repository directory, not into a Prism [runtime instance](/docs/prism/install/runtime-instance).
 
-Read [Prerequisites](/docs/prism/install/prerequisites) before you start. For what this layer is, read [Windmill layer](/docs/prism/architecture/windmill).
+This is the other hosting of the same product, not a second product. Read [Prerequisites](/docs/prism/install/prerequisites) before you start, and [Windmill-hosted Prism](/docs/prism/architecture/windmill) for what the hosting adds.
 
-## The Windmill layer runs on MongoDB or PostgreSQL
+## This hosting runs on MongoDB or PostgreSQL
 
 **This layer does not support the local storage backend.** The local store is single-process, and Windmill runs concurrent workers. The installer sets up one storage resource and asks which of the two shared backends it names.
 
@@ -26,14 +26,21 @@ wmill workspace add <profile-name> <workspace-id> <remote-url>
 
 Then run the installer.
 
-### Obtaining the gold master
+### What Corvis supplies
 
-The installer runs from a checkout of the Windmill layer, which Corvis distributes privately. Ask Corvis for access. You need an access token, supplied to the installer as `SIGHTLINE_TOKEN`, to download the layer without a checkout.
+Two files. Put them in the same directory.
+
+| File | What it is |
+|---|---|
+| `install.mjs` | The installer. macOS, Linux and Windows. |
+| `sightline-prism-windmill-latest.tar.gz` | The workspace content, the compiled engine, and the connectors. |
+
+The installer reads the archive from its own directory. It downloads nothing, and it needs no access token. Without the archive beside it, the installer stops and names the file it expected.
 
 ## The install command
 
 ```bash
-./install/install.sh --dir ../acme-prism-windmill --connectors crowdstrike,jira-assets
+node install.mjs --dir ./acme-prism-windmill --connectors crowdstrike,jira-assets
 ```
 
 | Flag | What it does | Required |
@@ -60,7 +67,7 @@ That is the whole list. The installer takes no other flag.
 
 ### The compiled code travels with the install
 
-The layer carries the compiled engine, connector SDK, shared review logic and connectors inside the directory it installs. It does not read a sibling `sightline-prism` checkout, and it does not need one. The operator CLI ships the same way — it compiles those packages into its own entry points — so neither component's *install* has a two-checkout requirement. Building either from source still does.
+The archive carries the compiled engine, connector SDK, shared review logic and connectors inside the directory it installs. It reads no other checkout, and it needs none. The operator CLI ships the same way: it compiles those packages into its own entry points. Neither install needs source on the machine.
 
 ## The storage resource
 
@@ -176,7 +183,7 @@ wmill sync push --dry-run
 Run the installer again against the same directory:
 
 ```bash
-./install/install.sh --dir ../acme-prism-windmill --connectors cylance
+node install.mjs --dir ./acme-prism-windmill --connectors cylance
 ```
 
 The installer detects the existing install and adds to it. It skips the workspace binding and the storage resource, and sets up only the new connector.
@@ -187,7 +194,7 @@ To redo a connector's credentials, delete its resource file first. The installer
 
 | Question | Document |
 |---|---|
-| What is the Windmill layer? | [Windmill layer](/docs/prism/architecture/windmill) |
+| What does this hosting add? | [Windmill-hosted Prism](/docs/prism/architecture/windmill) |
 | Which storage backend do I choose? | [Storage backends](/docs/prism/install/storage-backends) |
-| How do I install Prism itself? | [Installing Prism](/docs/prism/install/prism) |
-| What is the terminal equivalent of the review app? | [Operator CLI](/docs/prism/architecture/cli) |
+| How do I install the other hosting? | [Installing Standalone Prism](/docs/prism/install/prism) |
+| What is the terminal equivalent of the review app? | [The operator CLI](/docs/prism/architecture/cli) |

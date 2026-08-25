@@ -1,8 +1,8 @@
-This page lists what must be present before you install Sightline Prism, the operator CLI or the Windmill layer.
+This page lists what must be present before you install Sightline Prism, in either hosting.
 
 Every requirement on this page names the file it was read from. The source column is the last column of each table. If a requirement is not in a file, it is not on this page.
 
-**The requirement set depends on what you install.** A collector node needs less than a central node. A connector adds its own requirements. Read the section for the product you install, then read [Connector requirements](#connector-requirements) for the connectors you choose.
+**The requirement set depends on what you install.** A collector node needs less than a central node. A connector adds its own requirements. Read the section for what you install, then read [Connector requirements](#connector-requirements) for the connectors you choose.
 
 ## Node.js and npm
 
@@ -10,8 +10,8 @@ The installers refuse to run without Node.js and npm.
 
 | Requirement | What the installer does | Source |
 |---|---|---|
-| Node.js on the path | The installer stops and tells you to install it. | `install/install.sh`, `install/install.ps1` |
-| npm on the path | The installer stops. npm ships with Node.js. | `install/install.sh`, `install/install.ps1` |
+| Node.js on the path | You run the installer with it, so it is the one true prerequisite. | `install/install.mjs` |
+| npm on the path | The installer stops without it. npm ships with Node.js. | `install/install.mjs` |
 
 ### The Node version
 
@@ -27,45 +27,43 @@ The Prism installers add two more figures, and the two disagree:
 
 | When | What the installer prints | Source |
 |---|---|---|
-| Node.js is absent | Install Node 20 or later. | `install/install.sh`, `install/install.ps1` |
-| Node.js is older than major version 18 | A warning that Node 18 or later is recommended. | `install/install.sh`, `install/install.ps1` |
+| npm is absent | Install Node 20 or later; npm comes with it. | `install/install.mjs` |
+| Node.js is older than major version 18 | A warning that Node 18 or later is recommended. | `install/install.mjs` |
 
 **Neither installer fails on the Node version.** The version check prints a warning and continues.
 
 The operator CLI is the only component with a pinned version, and it is the highest figure here. Install Node 24 if you install the CLI.
 
-## Prism
+## Standalone Prism
 
 | Requirement | Why | Source |
 |---|---|---|
-| Node.js and npm | The installer stops without them. | `install/install.sh` |
+| Node.js and npm | The installer stops without them. | `install/install.mjs` |
+| The install archive beside the installer | The installer reads `sightline-prism-latest.tar.gz` from its own directory. | `install/install.mjs` |
 | A storage backend | Prism writes snapshots to MongoDB, to PostgreSQL, or to a local directory. | [Storage backends](/docs/prism/install/storage-backends) |
 
-Prism installs into a [runtime instance](/docs/prism/install/runtime-instance), not into its code checkout. The procedure is in [Installing Prism](/docs/prism/install/prism).
+Prism installs into a [runtime instance](/docs/prism/install/runtime-instance). The procedure is in [Installing Standalone Prism](/docs/prism/install/prism).
 
 ## Operator CLI
 
-Installing a released CLI tarball needs nothing beyond Node and npm — the engine and its supporting packages are compiled into it. **Building the CLI from source** has one requirement that no other product has: **a second code checkout**.
+The operator CLI adds nothing beyond Node and npm. The engine and its supporting packages are compiled into it, and it travels inside the Standalone Prism archive.
 
 | Requirement | Why | Source |
 |---|---|---|
-| Node 24 | The repository pins the version. | `sightline-prism-cli/.nvmrc` |
-| A `sightline-prism` checkout beside the CLI checkout | Building the CLI consumes the engine, the SDK and the shared review logic as file dependencies of a sibling directory. Not needed to install a release. | `sightline-prism-cli/package.json` |
-| The sibling checkout installed and built | An unbuilt sibling produces module-not-found errors; a stale one would be compiled into the tarball, so the build warns. | `sightline-prism-cli/package.json` |
-| git | The Prism installer prints a `git clone` command when the sibling checkout is missing. | `install/install.sh` |
+| Node 24 | The CLI repository pins the version. | `sightline-prism-cli/.nvmrc` |
 
-The order is not optional, and the failure it produces does not name its own cause. Read [Installing the CLI](/docs/prism/install/cli) before you start.
+Building the CLI from source is a different matter, and it needs a second code checkout. That is a contributor concern, and the `CONTRIBUTING.md` file in the source repository covers it.
 
-## Windmill layer
+## Windmill-hosted Prism
 
 | Requirement | Why | Source |
 |---|---|---|
-| The `wmill` CLI on the path | The installer stops without it, and prints the install command. | `sightline-prism-windmill/install/install.sh` |
-| A Windmill workspace | The installer runs `wmill init` against a target workspace. | `sightline-prism-windmill/install/install.sh` |
-| A MongoDB Atlas cluster | The resource setup accepts an Atlas hostname only. The local backend does not apply. | `sightline-prism-windmill/install/setup-resource.mjs` |
-| curl or wget | Needed only when you install without a gold-master checkout. | `sightline-prism-windmill/install/install.sh` |
+| The `wmill` CLI on the path | The installer stops without it, and prints the install command. | `sightline-prism-windmill/install/install.mjs` |
+| A Windmill workspace | The installer runs `wmill init` against a target workspace. | `sightline-prism-windmill/install/install.mjs` |
+| A MongoDB Atlas cluster, or a PostgreSQL server | The resource setup asks which backend, then only for that backend's values. The local backend does not apply. | `sightline-prism-windmill/install/setup-resource.mjs` |
+| The install archive beside the installer | The installer reads it from its own directory, and downloads nothing. | `sightline-prism-windmill/install/install.mjs` |
 
-The procedure is in [Installing the Windmill layer](/docs/prism/install/windmill).
+The procedure is in [Installing Windmill-hosted Prism](/docs/prism/install/windmill).
 
 ## Connector requirements
 
@@ -107,7 +105,7 @@ No page in this set states a hardware size, a network topology or a hosting reco
 | Question | Document |
 |---|---|
 | What is a runtime instance? | [The runtime instance](/docs/prism/install/runtime-instance) |
-| How do I install Prism? | [Installing Prism](/docs/prism/install/prism) |
+| How do I install Prism? | [Installing Standalone Prism](/docs/prism/install/prism) |
 | How do I install the operator CLI? | [Installing the CLI](/docs/prism/install/cli) |
-| How do I install the Windmill layer? | [Installing the Windmill layer](/docs/prism/install/windmill) |
+| How do I install the Windmill hosting? | [Installing Windmill-hosted Prism](/docs/prism/install/windmill) |
 | Which storage backend do I choose? | [Storage backends](/docs/prism/install/storage-backends) |

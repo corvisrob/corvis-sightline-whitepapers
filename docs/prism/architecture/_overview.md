@@ -1,4 +1,4 @@
-Sightline Prism collects asset data from many sources, normalises it to a common schema, and merges it into one consolidated view. This document describes the pipeline, the three products that make it up, and where each one runs.
+Sightline Prism collects asset data from many sources, normalises it to a common schema, and merges it into one consolidated view. This document describes the pipeline, the two hostings you can run it in, and where the work happens.
 
 ## The pipeline
 
@@ -22,25 +22,52 @@ flowchart TD
 
 The pipeline is not one program. Stages 1 to 4 run wherever the source is reachable. Stages 5 and 6 run centrally.
 
-## The three products
+## One product, two hostings
 
-| Product | What it does |
-|---|---|
-| **Prism** | The engine, the connector SDK and the connectors. It performs the collection and the merge. |
-| **Prism CLI** | The operator console. It runs syncs, and it presents changesets for review in a terminal. |
-| **Prism for Windmill** | The orchestration and browser layer. It schedules collections and presents the same review operations in a browser. |
+Prism is one product. There are two ways to run it, and they differ in where the product runs, not in what it does.
 
-The three depend on each other in one direction only.
+| Hosting | Where it runs | What the operator uses |
+|---|---|---|
+| **Standalone Prism** | Your own machines, as one or more nodes | The operator CLI, in a terminal |
+| **Windmill-hosted Prism** | A Windmill workspace | The review app, in a browser |
+
+Both hostings run the same engine, the same connectors and the same rules. A decision an operator records in one is the same decision, with the same effect, in the other.
 
 ```mermaid
 flowchart LR
-    W[Prism for Windmill] -->|orchestrates| P[Prism<br/>engine + SDK + connectors]
-    C[Prism CLI] -->|consumes engine and SDK| P
+    S["Standalone Prism<br/>operator CLI"] --> E[("the Prism store")]
+    W["Windmill-hosted Prism<br/>review app"] --> E
 ```
 
-Prism CLI and Prism for Windmill both build against the engine and the connector SDK from a Prism checkout beside them, and both ship that code compiled into their own release artifact — so an installed copy of either needs no Prism checkout of its own. Prism for Windmill deploys Prism connectors and calls the same engine.
+### Standalone does not mean one machine
 
-Prism itself has no dependency on either. A connector you build against the connector SDK runs without the CLI and without Windmill.
+A standalone deployment is already more than one node.
+
+- `--role collector` installs a node that collects near a source.
+- `--role central` installs a node that runs the sync engine and the review TUI.
+- `prism-drain` runs where the source system is reachable, which is often neither of them.
+
+Standalone means that Windmill does not host the product. It says nothing about the size of the deployment.
+
+### The two hostings are not exclusive
+
+A customer who chooses Windmill keeps the terminal. The operator CLI reads and writes an ordinary Prism store, and a Windmill-hosted store is an ordinary Prism store. An operator runs `prism-migrate-rules` against a Windmill deployment from a laptop, and the workspace shows the result.
+
+Choose a hosting for where your operator works. Do not choose it for what the product can do.
+
+### How the code is arranged
+
+The product is built from three repositories. This is a build-time fact, and an installed copy of Prism needs none of them.
+
+| Repository | What it holds |
+|---|---|
+| `sightline-prism` | The sync engine, the connector SDK and the connectors |
+| `sightline-prism-cli` | The operator CLI |
+| `sightline-prism-windmill` | The Windmill layer: the collector scripts and the review app |
+
+The operator CLI and the Windmill layer each compile the engine and the connector SDK into their own release artifact. That is what lets an install carry no source and reach no registry. The `CONTRIBUTING.md` file in the source repository covers building them.
+
+A connector you write against the connector SDK runs under either hosting.
 
 ## Where Prism runs
 
@@ -48,12 +75,14 @@ Prism separates the code from the deployment. The distinction causes more confus
 
 | Term | What it is |
 |---|---|
-| **code checkout** | A clone of one of the three repositories. Code lives here. Operational commands do **not** run from here. |
-| **runtime instance** | A directory created by `install/install.sh --dir <path>`. It holds the environment file, the data directory, the connector manifests and the rule instances. Operational commands run from here. |
+| **install directory** | Where `install.mjs` and the archive sit. The installer reads this. Operational commands do **not** run from here. |
+| **runtime instance** | A directory created by `node install.mjs --dir <path>`. It holds the environment file, the data directory, the connector manifests and the rule instances. Operational commands run from here. |
 
-You can create more than one runtime instance from one code checkout. Each instance has its own configuration and its own data.
+You can create more than one runtime instance from one install directory. Each instance has its own configuration and its own data.
 
-If you run an operational command in the code checkout, it does not find the environment file or the data directory. The failure does not name the cause.
+If you run an operational command anywhere but the instance, it does not find the environment file or the data directory. The failure does not name the cause.
+
+A contributor working from a `sightline-prism` **code checkout** meets the same rule: the checkout holds code, and it is never where a command runs.
 
 ## Storage backends
 
@@ -65,11 +94,11 @@ Prism stores data in one of three backends. The `STORAGE_BACKEND` environment va
 | PostgreSQL | `postgres` | One table per collection, created on first write. Safe for more than one process. |
 | Local JSON store | `local` | One file per collection, in the instance data directory. Single-process. |
 
-Every connector, the sync engine and the CLI work against any of them. No code changes.
+Every connector, the sync engine and the operator CLI work against any of them. No code changes.
 
 **The backends do not share data.** A runtime instance that you move from the local store to MongoDB starts empty. Its collected data stays in the local store, and Prism does not migrate it for you. Decide the backend before you collect data you want to keep.
 
-The Windmill deployment uses MongoDB or PostgreSQL, never the local store. A local-store instance on a workstation does not carry over to it.
+Windmill-hosted Prism uses MongoDB or PostgreSQL, never the local store. A local-store instance on a workstation does not carry over to it.
 
 ## Where to go next
 
@@ -80,5 +109,5 @@ The Windmill deployment uses MongoDB or PostgreSQL, never the local store. A loc
 | What is a connector, and what is a manifest? | [Connector model](/docs/prism/architecture/connector-model) |
 | How do I build a connector? | [Writing a connector](/docs/prism/architecture/writing-a-connector) |
 | Which sources are supported? | [Connectors](/docs/prism/architecture/connectors/) |
-| What is the CLI? | [Operator CLI](/docs/prism/architecture/cli) |
-| What does the Windmill layer add? | [Windmill layer](/docs/prism/architecture/windmill) |
+| What is the operator CLI? | [The operator CLI](/docs/prism/architecture/cli) |
+| What does Windmill hosting add? | [Windmill-hosted Prism](/docs/prism/architecture/windmill) |

@@ -1,6 +1,6 @@
 A collector reads one source and transmits a snapshot into Prism. This page covers running one.
 
-**Start in your [runtime instance](/docs/prism/install/runtime-instance), not in the code checkout.** A collector resolves its manifest, its environment and its data directory against the current directory. Run it anywhere else and it finds none of them.
+**Start in your [runtime instance](/docs/prism/install/runtime-instance), not in the directory you installed from.** A collector resolves its manifest, its environment and its data directory against the current directory. Run it anywhere else and it finds none of them.
 
 ```bash
 cd acme-prism
@@ -114,11 +114,10 @@ The transmit line in the run log is the first signal. To confirm independently, 
 
 Schema validation is a separate check. It confirms that the schema definitions themselves are sound, not that your collected data is correct.
 
-**Run it from the code checkout**, not from a runtime instance — it runs against the schema sources.
+Run it from the runtime instance. The connector SDK ships the validator, so an installed node can run it.
 
 ```bash
-cd sightline-prism
-npm run schemas:validate
+node node_modules/@sightline/prism-connector-sdk/dist/schemas/metadata.js
 ```
 
 **Expected output.** A pass result with no reported failures.
@@ -129,7 +128,7 @@ A validation failure here points at the **schema definitions**, not at your coll
 
 That is a code-level problem, not an operational one. It is not the check that tells you a collector produced bad data. A collector validates its own records as it runs, and reports the valid count in its snapshot summary. A total higher than the valid count is the signal that records were rejected.
 
-If schema validation fails after an upgrade, the installed packages are inconsistent. Read [Upgrading Prism](/docs/prism/upgrade/prism).
+If schema validation fails after an upgrade, the installed packages are inconsistent. Read [Upgrading Prism](/docs/prism/upgrade/prism) for how to upgrade the instance.
 
 ## Where to go next
 

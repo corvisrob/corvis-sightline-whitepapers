@@ -1,6 +1,6 @@
-Sightline Prism, the operator CLI and the Windmill layer release on their own cadences. They are not independent of each other.
+Sightline Prism, the operator CLI and the Windmill layer each release on their own cadence. They are not independent of each other.
 
-**Read this page before you upgrade any of the three.** An upgrade that moves one product without the others can produce a combination nobody has run.
+**Read this page before you upgrade any of them.** An upgrade that moves one component without the others can produce a combination nobody has run.
 
 ## The three states
 
@@ -37,11 +37,11 @@ So you cannot answer "which engine is inside CLI v2.0.1?" from the release. If y
 
 | Product | Latest release | How it is distributed |
 |---|---|---|
-| Sightline Prism | `v2.0.0`, released 2026-07-11 | Tarballs attached to a release |
-| Operator CLI | `v2.0.1` | A versioned tarball attached to a private release |
-| Windmill layer | No tagged release | A gold-master tarball, obtained from Corvis |
+| Sightline Prism | `v2.0.0`, released 2026-07-11 | Inside the Standalone Prism install archive |
+| Operator CLI | `v2.0.1` | Inside the same archive, selected by `--role central` |
+| Windmill layer | No tagged release | An archive the Windmill installer downloads |
 
-The Windmill layer does not tag versions. It distributes a current gold master. Your version is therefore the date you last ran its update, not a number.
+The Windmill layer does not tag versions. It distributes one current archive. Your version is therefore the date you last ran its update, not a number.
 
 ## The matrix
 
@@ -77,7 +77,7 @@ That axis has its own page, because it decides whether your existing snapshots s
 
 ## Before you upgrade
 
-1. Find your current version of each of the three products.
+1. Find your current version of each component you run.
 2. Find the combination you intend to move to in the matrix above.
 3. If it is unverified, upgrade a non-production instance first.
 4. Read [Rollback](/docs/prism/upgrade/rollback) before you start, not after.
@@ -88,6 +88,6 @@ That axis has its own page, because it decides whether your existing snapshots s
 |---|---|
 | How do I upgrade Prism? | [Upgrading Prism](/docs/prism/upgrade/prism) |
 | How do I upgrade the CLI? | [Upgrading the CLI](/docs/prism/upgrade/cli) |
-| How do I upgrade the Windmill layer? | [Upgrading the Windmill layer](/docs/prism/upgrade/windmill) |
+| How do I upgrade the Windmill hosting? | [Upgrading Windmill-hosted Prism](/docs/prism/upgrade/windmill) |
 | What happens to my existing records? | [Schema versions and rule migration](/docs/prism/upgrade/schema-migration) |
 | Can I go back? | [Rollback](/docs/prism/upgrade/rollback) |
