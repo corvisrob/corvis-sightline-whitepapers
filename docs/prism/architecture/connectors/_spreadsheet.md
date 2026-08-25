@@ -2,18 +2,13 @@ Imports asset data from Excel (`.xlsx`) files using a JSON mapping configuration
 
 ## Data Flow
 
-```
-XLSX File + Mapping JSON
-        ↓
-  ExcelLoader (parse & transform)
-        ↓
-  YAML Intermediate File (human-readable, editable)
-        ↓
-  BaseAsset Transformation
-        ↓
-  Schema Validation (Zod)
-        ↓
-  MongoDB Snapshot
+```mermaid
+flowchart TD
+    A["XLSX file + mapping JSON"] --> B["ExcelLoader<br/>parses and transforms"]
+    B --> C["YAML intermediate file<br/>human-readable, editable"]
+    C --> D["BaseAsset transformation"]
+    D --> E["Schema validation (Zod)"]
+    E --> F[("MongoDB snapshot")]
 ```
 
 ## Usage

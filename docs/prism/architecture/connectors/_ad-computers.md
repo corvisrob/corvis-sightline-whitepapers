@@ -2,20 +2,14 @@ Collects computer objects from Active Directory and pushes snapshots to MongoDB 
 
 ## Architecture
 
-```
-Domain-joined Windows machine
-┌──────────────────────────────────┐
-│  Collect-ADComputers.ps1         │
-│  (PowerShell + RSAT AD)          │
-│         │                        │
-│         ▼ YAML file              │
-│                                  │
-│  Push-ADSnapshot.ps1             │
-│  (PowerShell + Mdbc)             │
-│         │                        │
-│         ▼                        │
-│    MongoDB                       │
-└──────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph win["Domain-joined Windows machine"]
+        C["Collect-ADComputers.ps1<br/>PowerShell + RSAT AD"]
+        P["Push-ADSnapshot.ps1<br/>PowerShell + Mdbc"]
+    end
+    C -->|YAML file| P
+    P --> M[("MongoDB")]
 ```
 
 Both scripts can run on the same Windows machine. If the AD machine cannot reach MongoDB directly, copy the YAML file to a machine that can and run `Push-ADSnapshot.ps1` there.
