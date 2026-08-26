@@ -1,74 +1,91 @@
-Each repository releases on its own cadence, and the three do not release the same
-way. One blanket statement about them would be false.
+Three artefacts come out of this project, and they are built three different ways.
+One of the three pushes.
 
-| Repository | How it releases |
-|---|---|
-| `sightline-prism` | A hand-invoked `scripts/release.sh`. No continuous integration in that path. |
-| `sightline-prism-windmill` | Its own hand-invoked `scripts/release.sh`. |
-| `sightline-prism-cli` | A continuous-integration workflow. |
+| Artefact | Built by | Pushes? |
+|---|---|---|
+| `prism-standalone-<version>.tgz` | `npm run build:release` in `sightline-prism-cli` | No |
+| `prism-windmill-<version>.tgz` | `npm run build:release` in `sightline-prism-windmill` | No |
+| The public source mirror and its GitHub Release | `scripts/release.sh` in this repo | Yes |
 
-## Neither release script pushes
+## The two install archives
 
-Both hand-invoked scripts commit locally and stop. They print the `git push` command
-for a person to run after reviewing the commits.
+Each archive is built by its own repository, from a manifest in that repository.
 
-**That is deliberate, and it is the control worth keeping.** A push is the step that
-makes an artifact public. A person reads the diff first, and automating the push
-removes the only point at which someone looks.
+```bash
+(cd ../sightline-prism-cli      && npm run build:release)
+(cd ../sightline-prism-windmill && npm run build:release)
+```
 
-The CLI's workflow is the counter-case, and it earns the automation. A release cut
-from a workstation can bundle a file that was never committed. A clean automated
-checkout cannot.
+Each lands a versioned directory under `dist/releases/<version>/`, holding the
+archive and the installer that reads it. `dist/` is gitignored, so the directory is
+a build output. Nothing is committed, tagged or pushed, and you take the directory
+to wherever you distribute from.
 
-## What `scripts/release.sh` does
+Both builds need a sibling `sightline-prism` checkout. This repository is the
+library: the CLI packs its workspaces, and the Windmill build compiles its engine
+into `vendor/`.
 
-In `sightline-prism`:
+### What ships is a manifest, not a script
 
-1. Builds and packs every workspace.
-2. Assembles the public source mirror, in a staging directory.
-3. Assembles the install archive, and lands it with a copy of `install.mjs`.
-4. Pushes the source, tags the release, and creates the GitHub Release.
-5. Patch-bumps every package for next time.
+`scripts/bundle.yaml` in each repository names what the archive carries, as globs.
+To change what ships, change that file. `keep` wins over `exclude`, which wins over
+`include`, which is how `.env.example` survives a blanket exclusion of `.env.*`.
 
-`--dry-run` stops after step 3 and lands nothing. `--no-bump` skips step 5.
+The bundler and the manifest both sit in `scripts/`, which the manifest excludes.
+Build tooling has no place in a customer's archive.
+
+### A release must come from a commit
+
+Both builds stop when any input repository has uncommitted changes. `--allow-dirty`
+builds anyway and records the fact, so a development build is never mistaken later
+for a clean one.
+
+Every archive carries `BUILD-INFO.json` at its root. It holds the version, the
+build time, and for each input repository the remote, the `HEAD` and whether that
+tree was dirty. Read it without unpacking:
+
+```bash
+tar -xzOf prism-standalone-<version>.tgz sightline-prism/BUILD-INFO.json
+```
+
+That is the path from an archive in the field back to the source behind it.
+
+## The public source mirror
+
+`scripts/release.sh` mirrors the public packages to `sightline-public/prism` and
+creates the GitHub Release.
+
+⛔ **This script pushes.** Past the `--dry-run` gate it pushes the public mirror,
+pushes private `main`, force-pushes tags on both repositories, and creates a public
+GitHub Release. There is no second confirmation. Run `--dry-run` first and read what
+it reports.
+
+`--dry-run` stops before anything lands. `--no-bump` skips the closing patch bump.
 
 ### The mirror is staged, never edited in place
 
-Step 2 builds the mirror in a staging directory. It swaps that in only past the
-dry-run gate.
-
-This matters more than it sounds. The mirror is a working tree, so anything in it
-without a source behind it exists in exactly one place on disk. An earlier version
-deleted the target before that gate, so even a dry run destroyed such files.
+The mirror is built in a staging directory and swapped in only past the dry-run
+gate. The mirror is a working tree, so anything in it with no source behind it
+exists in exactly one place on disk. An earlier version deleted the target before
+that gate, so even a dry run destroyed such files.
 
 Before replacing the mirror, the script reports anything the live copy holds that
-the new build does not. Read that list. It is the only warning you get that a
-release is about to drop a file.
+the new build does not. Read that list: it is the only warning that a release is
+about to drop a file.
 
 ### The environment-file check is not optional
 
-The script strips every `.env` from the staged mirror, then **verifies none
-survived** and aborts if any did. The install archive gets the same verification.
+The script strips every `.env` from the staged mirror, then verifies none survived
+and aborts if any did. Both archive builds run the same verification over their own
+staged trees, after the manifest has selected what ships.
 
-Do not weaken either check. They are the reason a credential cannot reach a public
-artifact by accident.
-
-An allowlist is why one cannot reach the archive at all. `assemble-bundle.mjs`
-copies named files, never directories.
-
-## Building the CLI is a prerequisite
-
-The install archive carries the operator CLI, which lives in its own repository. The
-release builds it from the sibling checkout before packing, rather than packing
-whatever `dist/` happens to hold. That is how a stale engine would otherwise reach a
-customer with nothing to show for it.
-
-The script stops with the path it expected when the sibling is absent.
+Do not weaken any of the three. They are the reason a credential cannot reach a
+public artefact by accident, and they exist because one did.
 
 ## Where to go next
 
 | Question | Document |
 |---|---|
-| Why does the CLI need two checkouts? | [Building the operator CLI](/docs/prism/development/building-the-cli) |
 | How do I test an installer change? | [Testing an install](/docs/prism/development/testing-an-install) |
+| Why does the CLI need two checkouts? | [Building the operator CLI](/docs/prism/development/building-the-cli) |
 | Which versions pair? | [Version compatibility](/docs/prism/upgrade/compatibility) |

@@ -15,7 +15,7 @@ The same operations are available in a browser, in Windmill-hosted Prism. See [T
 
 Changes are grouped into an asset tree. Each row is one proposed field change. It shows the old value against the new one, with the source that proposed it and that source's priority.
 
-You are not deciding whether the new value is *newer*. The engine already settled that. You are deciding whether it is **right**.
+You are not deciding whether the new value is newer. The engine already settled that. You are deciding whether it is right.
 
 ## The keys
 
@@ -39,7 +39,7 @@ You are not deciding whether the new value is *newer*. The engine already settle
 
 ## Reject and decline are not the same
 
-This is the part the key names do not tell you. **All three of `r`, `d` and `D` reject the change.** They differ in what they leave behind.
+This is the part the key names do not tell you. All three of `r`, `d` and `D` reject the change. They differ in what they leave behind.
 
 | Key | The change | What is suppressed afterwards |
 |---|---|---|
@@ -61,11 +61,11 @@ A source can propose an asset that Prism does not yet hold. `l` opens a picker s
 
 ## Applying
 
-`enter` does **not** apply. It opens a confirmation step, which reports what you decided. `y` commits and `n` returns you to the list.
+`enter` does not apply. It opens a confirmation step, which reports what you decided. `y` commits and `n` returns you to the list.
 
 Only then are approved changes written into the consolidated dataset and the changeset persisted.
 
-**Applying is the point of no return for that pass.** Anything you approved is written. To undo it afterwards you roll the changeset back. That is a data operation, and a different thing from a version rollback — see [Browse datasets and changesets](/docs/prism/usage/browse).
+**Applying is the point of no return for that pass.** Anything you approved is written. To undo it afterwards you roll the changeset back. That is a data operation, and a different thing from a version rollback. See [Browse datasets and changesets](/docs/prism/usage/browse).
 
 A change you left undecided stays pending. It appears again next time you review.
 

@@ -23,13 +23,13 @@ The command looks in two places, in order:
 1. `rules/<rule-id>.json`, relative to your current directory.
 2. The rule storage collection, if no such file exists.
 
-It prints which one it used. **Keep your rule files.** The file path is the one that works reliably — see [If the rule is not found](#if-the-rule-is-not-found).
+It prints which one it used. Keep your rule files. The file path is the one that works reliably: see [If the rule is not found](#if-the-rule-is-not-found).
 
-A rule that exists but is disabled stops the run with a message saying so. That is not a failure; it is the rule's `enabled` flag doing its job.
+A rule that exists but is disabled stops the run with a message saying so.
 
 ## Auto-apply against pending review
 
-This is the distinction that decides whether you have more work to do.
+The mode on each field rule decides whether you have more work to do.
 
 Every field rule carries a mode:
 
@@ -38,7 +38,7 @@ Every field rule carries a mode:
 | `auto` | The change is applied immediately, where priority permits. |
 | `review` | The change is recorded and left **pending**. Nothing is written yet. |
 
-**A sync that reports pending changes has not failed.** It has queued them. An operator who expects `auto` everywhere reads a pending count as a broken sync. They then look for an error that does not exist.
+**A sync that reports pending changes has not failed.** It has queued them.
 
 Priority still governs an `auto` change. A lower-priority source does not overwrite a higher-priority value simply because its rule says `auto`.
 
@@ -56,9 +56,9 @@ The command reports where it looked. Two causes are common, and the second one i
 
 **The file is not there.** You are in the wrong directory, or the rule id does not match the filename. The command prints the exact path it tried.
 
-⚠️ **The rule was migrated into storage.** `prism-migrate-rules` writes rules into a `rules` collection, but this command's storage fallback reads a `sync_rules` collection. **They are different collections.** A rule that exists only in storage after a migration is therefore not found here.
+⚠️ **The rule was migrated into storage.** `prism-migrate-rules` writes rules into a `rules` collection, but this command's storage fallback reads a `sync_rules` collection. A rule that exists only in storage after a migration is therefore not found here.
 
-**Keep the `rules/*.json` files in your instance.** They are the path this command resolves first, and the one that does not depend on that mismatch. Do not delete them after running a migration.
+**Keep the `rules/*.json` files in your instance.** They are the path this command resolves first, and the one that does not depend on that mismatch.
 
 ## See what the sync produced
 

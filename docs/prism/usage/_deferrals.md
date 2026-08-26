@@ -15,16 +15,16 @@ You do not create a deferral here. You create one at review, with `d` or `D`:
 
 | Review key | The deferral it creates |
 |---|---|
-| `d` | Suppresses **that exact value** from that source. A corrected value still comes through. |
-| `D` | Suppresses **the whole field** from that source. Nothing from it is proposed for that field again. |
+| `d` | Suppresses that exact value from that source. A corrected value still comes through. |
+| `D` | Suppresses the whole field from that source. Nothing from it is proposed for that field again. |
 
-`r` — plain reject — creates no deferral at all. [Review and apply changesets](/docs/prism/usage/review-changesets) covers the distinction where you make it.
+Plain reject (`r`) creates no deferral at all. [Review and apply changesets](/docs/prism/usage/review-changesets) covers the distinction where you make it.
 
 ## Why a mistake here is quiet
 
-**A suppressed change does not reappear.** That is the point of the feature, and it is also the trap.
+**A suppressed change does not reappear.** That is the point of the feature.
 
-A deferral made in error produces no error, no warning and no pending change. The source keeps sending the value, and Prism keeps discarding it. Nothing in the review queue hints that a decision is being applied on your behalf.
+A deferral made in error raises no error or warning, and leaves no pending change. The source keeps sending the value, and Prism keeps discarding it. Nothing in the review queue hints that a decision is being applied on your behalf.
 
 So the symptom of a wrong deferral is a field that never updates, from a connector that is running perfectly. **This list is the only place that shows it.** Check here before concluding a connector is broken.
 
@@ -37,7 +37,7 @@ So the symptom of a wrong deferral is a field that never updates, from a connect
 | `←` | Back to the menu |
 | `q` | Quit |
 
-**Expected output when there are none.** A line confirming there are no permanent deferrals. That is a normal state, not an error.
+**Expected output when there are none.** A line confirming there are no permanent deferrals.
 
 Removing a deferral does not restore the value it suppressed. It stops the suppression. The next sync from that source proposes the value again, and it returns to the review queue like any other change.
 

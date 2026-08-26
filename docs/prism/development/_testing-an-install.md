@@ -1,37 +1,40 @@
-The installer reads `sightline-prism-latest.tar.gz` from its own directory and
-nothing else. There is no build-from-source mode, so to exercise an installer change
-you build an archive first.
+The installer reads one archive from its own directory and nothing else. There is
+no build-from-source mode, so to exercise an installer change you build an archive
+first.
 
-## The short way
+The archive is built by `sightline-prism-cli`, not by this repository. This one is
+the library it packs.
 
-`scripts/release.sh --dry-run` assembles the archive and lands nothing. It prints
-the staging path it used.
-
-## Building one by hand
+## Build one, then install from it
 
 ```bash
-# 1. pack the workspaces, and the CLI from its sibling checkout
-TARS=$(mktemp -d)
-npm pack --workspaces --pack-destination "$TARS"
-(cd ../sightline-prism-cli && npm run build && npm pack --pack-destination "$TARS")
-
-# 2. lay out the archive tree
-STAGE=$(mktemp -d)
-node scripts/assemble-bundle.mjs "$STAGE" "$PWD/install" \
-  "$TARS"/sightline-prism-connector-*.tgz "$TARS"/sightline-prism-cli-*.tgz
-
-# 3. pack it, then install from it
-tar -czf "$STAGE/sightline-prism-latest.tar.gz" -C "$STAGE" sightline-prism
-cp install/install.mjs "$STAGE/"
-(cd "$STAGE" && node install.mjs --dir ./test-instance --role central --connectors crowdstrike)
+(cd ../sightline-prism-cli && npm run build:release --allow-dirty)
 ```
 
-`scripts/assemble-bundle.mjs` is a closed allowlist. The archive root gets the three
-installer and helper files and nothing else. `packages/` gets exactly the tarballs
-you name, and `scripts/__tests__/assemble-bundle.test.ts` holds that contract.
+That lands `prism-standalone-<version>.tgz` and `install.mjs` together in
+`../sightline-prism-cli/dist/releases/<version>/`. Install from there:
 
-**`--archive` points the installer at a different archive**, so you can keep several
-and switch between them without renaming anything.
+```bash
+cd ../sightline-prism-cli/dist/releases/<version>
+node install.mjs --dir ./test-instance --role central --connectors crowdstrike
+```
+
+`--allow-dirty` is what lets a test build run against a working tree. It stamps
+`dirty: true` into the archive's `BUILD-INFO.json`, so a test build cannot later be
+mistaken for a release.
+
+## Choosing between archives
+
+The installer installs the single archive it finds beside it. Keep two versions in
+one directory and it stops and lists them, rather than guessing which you meant.
+
+**`--archive <name>` names one explicitly**, so you can keep several and switch
+between them without renaming anything.
+
+`scripts/bundle.yaml` in `sightline-prism-cli` decides what the archive root
+carries. `scripts/assemble-bundle.mjs` lays it out as a closed allowlist, so
+`packages/` gets exactly the tarballs the build packed.
+`scripts/__tests__/assemble-bundle.test.ts` holds that contract.
 
 ## Running a collector from a checkout
 

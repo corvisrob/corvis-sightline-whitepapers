@@ -18,7 +18,7 @@ So a single `crowdstrike` connector can serve two tenants as `crowdstrike.prod` 
 
 Two connectors need no credentials at all: `aws-ec2-mock` and `jira-assets-mock`. They generate synthetic records.
 
-Run one first. It confirms the mechanics — manifest, transmit, storage — before any real credential is involved.
+Run one first. It confirms the mechanics (manifest, transmit, storage) before any real credential is involved.
 
 1. Change into your runtime instance.
 2. Run the mock collector, naming an instance.
@@ -30,7 +30,7 @@ npx prism-collect-aws-ec2-mock demo
 
 **Expected output.** A short run log. The collection starts, then records are transformed to the `AssetComputer` schema. A snapshot is created with a total count and a valid count. A final line confirms the transmit to `inbox_aws-ec2-mock.demo`.
 
-The last line is the one that matters. **No transmit line means no data reached the store**, whatever else the log says.
+The last line is the one that matters. No transmit line means no data reached the store, whatever else the log says.
 
 ## Run a credentialed collector
 
@@ -47,11 +47,11 @@ npx prism-collect-crowdstrike prod
 
 **Expected output.** The same shape as the mock: fetch, transform, snapshot counts, then a transmit line naming `inbox_crowdstrike.prod`.
 
-A missing credential fails the run and names the variable. That is the intended behaviour — a collector stops rather than running half-authenticated.
+A missing credential fails the run and names the variable.
 
 ## The PowerShell agents are different
 
-Two connectors run as PowerShell agents on the Windows machine being inventoried. They do not use the commands above, **and they do not work the same way as each other.**
+Two connectors run as PowerShell agents on the Windows machine being inventoried. They do not use the commands above, and they do not work the same way as each other.
 
 | Connector | Shape |
 |---|---|
@@ -74,7 +74,7 @@ It needs the `Mdbc` PowerShell module to reach MongoDB.
 
 ⚠️ **This one is a two-step operation, and stopping after the first step is the common mistake.**
 
-The first script queries Active Directory and writes a **YAML file on disk**. It does not reach MongoDB. The second script reads that file and writes it in.
+The first script queries Active Directory and writes a YAML file on disk. It does not reach MongoDB. The second script reads that file and writes it in.
 
 1. On a domain-joined host, collect to a file.
 
@@ -92,13 +92,13 @@ The first script queries Active Directory and writes a **YAML file on disk**. It
 
    **Expected output.** Confirmation that the snapshot was written. The script finds the most recent YAML file in its own directory when you give it no path.
 
-**If you run only the first script, you have a file and no data in Prism.** Nothing reports an error, because nothing failed — the second half simply never ran.
+**If you run only the first script, you have a file and no data in Prism.** Nothing reports an error, because nothing failed: the second half simply never ran.
 
-The two scripts can run on the same machine. When the domain-joined host cannot reach MongoDB, copy the YAML file to a machine that can and run the push there. `Push-ADSnapshot.ps1` accepts a path, a connection and a database.
+The two scripts can run on the same machine. When the domain-joined host cannot reach MongoDB, copy the YAML file to a machine that can. Run the push there. `Push-ADSnapshot.ps1` accepts a path, a connection and a database.
 
 ## Confirm the collection landed
 
-The transmit line in the run log is the first signal. To confirm independently, browse the dataset the collector wrote to — see [Browse datasets and changesets](/docs/prism/usage/browse).
+The transmit line in the run log is the first signal. To confirm independently, browse the dataset the collector wrote to; see [Browse datasets and changesets](/docs/prism/usage/browse).
 
 ## Validate schemas
 
@@ -114,7 +114,7 @@ node node_modules/@sightline/prism-connector-sdk/dist/schemas/metadata.js
 
 ### What a failure means
 
-A validation failure here points at the **schema definitions**, not at your collected records. It means a schema in the registry does not hold together — a version is missing, or a definition is malformed.
+A validation failure here points at the schema definitions, not at your collected records. It means a schema in the registry does not hold together: a version is missing, or a definition is malformed.
 
 That is a code-level problem, not an operational one. It is not the check that tells you a collector produced bad data. A collector validates its own records as it runs, and reports the valid count in its snapshot summary. A total higher than the valid count is the signal that records were rejected.
 

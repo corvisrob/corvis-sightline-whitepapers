@@ -11,13 +11,13 @@ What must be present before you install Sightline Prism.
 
 Download Node.js from [the Node.js download page](https://nodejs.org/en/download/). The page has builds for Windows and Linux.
 
-The installer warns about an old Node.js version and then continues. It does not stop.
+The installer warns about an old Node.js version and then continues.
 
 ## Standalone Prism
 
 | Requirement | Notes |
 |---|---|
-| `sightline-prism-latest.tar.gz` beside the installer | The installer reads the archive from its own directory. |
+| `prism-standalone-<version>.tgz` beside the installer | The installer reads the archive from its own directory. |
 | A storage backend | MongoDB, PostgreSQL, or a local directory. See [Storage backends](/docs/prism/install/storage-backends). |
 
 Prism installs into a [runtime instance](/docs/prism/install/runtime-instance). The procedure is in [Installing Standalone Prism](/docs/prism/install/prism).

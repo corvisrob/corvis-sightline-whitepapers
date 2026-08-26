@@ -32,7 +32,7 @@ If you use the MongoDB backend, your records are in MongoDB and this copies conf
 
 The upgrade re-runs the installer against the same runtime instance.
 
-1. Replace `sightline-prism-latest.tar.gz` in your install directory with the archive for the version you are moving to. Corvis supplies it.
+1. Put the archive for the version you are moving to in your install directory, and remove the old one. Corvis supplies it. The installer installs the single archive it finds beside it, so two versions in one directory stop it rather than letting it guess.
 2. Re-run the installer with the same `--dir` and the same `--role` and `--connectors` you used before.
 
 ```bash

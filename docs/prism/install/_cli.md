@@ -1,4 +1,4 @@
-**There is no separate CLI install.** The operator CLI travels inside the Standalone Prism archive. The installer selects it when you ask for a node that needs it.
+The operator CLI travels inside the Standalone Prism archive; there is no separate CLI install. The installer selects it when you ask for a node that needs it.
 
 This page covers what you get, and how to confirm you got it. [Installing Standalone Prism](/docs/prism/install/prism) covers the procedure.
 
@@ -30,7 +30,7 @@ Five entry points.
 
 ## Verify the install
 
-Change into the runtime instance, then list its entry points.
+Change into the runtime instance. List its entry points.
 
 ```bash
 cd ../acme-central

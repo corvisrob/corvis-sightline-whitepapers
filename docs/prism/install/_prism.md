@@ -13,7 +13,7 @@ Two files. Put them in the same directory.
 | File | What it is |
 |---|---|
 | `install.mjs` | The installer. One script, for macOS, Linux and Windows. |
-| `sightline-prism-latest.tar.gz` | Every package a node can need, in one archive. |
+| `prism-standalone-<version>.tgz` | Every package a node can need, in one archive. |
 
 The installer reads the archive from its own directory. Without it, the installer stops and names the file it expected.
 
@@ -39,7 +39,7 @@ A central node runs the sync engine and the review TUI.
 node install.mjs --dir ../acme-central --role central --connectors spreadsheet
 ```
 
-**The operator CLI is already in the archive.** `--role central` selects it. There is nothing further to obtain and nothing further to install.
+**The operator CLI is already in the archive.** `--role central` selects it.
 
 ## The flags
 
@@ -60,7 +60,7 @@ A rejected value stops the install before it writes anything. Where the name is 
 1. It checks for Node.js and npm, and stops when either is missing.
 2. It resolves the package list from `--role` and `--connectors`, and stops when the archive is not beside it.
 3. It creates the runtime instance and marks it with a `package.json`.
-4. It extracts the archive, and selects the packages it resolved **by name**.
+4. It extracts the archive, and selects the packages it resolved by name.
 5. It installs those packages into the runtime instance.
 6. It checks the system prerequisites of the connectors it installed.
 7. It assembles the environment file.
@@ -68,7 +68,7 @@ A rejected value stops the install before it writes anything. Where the name is 
 
 Steps 6 and 8 warn or skip rather than fail. The install reports success even when a system prerequisite is missing.
 
-**Step 4 is what keeps a node small.** The archive carries every connector. The installer takes only the ones you asked for. A collector node never receives the operator CLI, and never a connector it does not run.
+**Step 4 is what keeps a node small.** The archive carries every connector. The installer takes only the ones you asked for.
 
 ### The environment file
 
@@ -83,7 +83,7 @@ It writes two files into the runtime instance:
 
 **Your values survive a re-run.** The installer never overwrites an existing `.env`. After you add a connector, compare the refreshed `.env.example` against your `.env` and copy across any new key.
 
-The installer supplies the variable names. **You supply the values.** Which variables appear depends on the connectors you installed. The storage variables always appear, because every install includes the SDK. [Storage backends](/docs/prism/install/storage-backends) describes those.
+The installer supplies the variable names. You supply the values. Which variables appear depends on the connectors you installed. The storage variables always appear, because every install includes the SDK. [Storage backends](/docs/prism/install/storage-backends) explains how to set them.
 
 Never commit the runtime instance's `.env`.
 

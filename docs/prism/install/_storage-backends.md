@@ -39,34 +39,34 @@ PostgreSQL holds each collection in its own table, as `_id text primary key, doc
 npm install pg
 ```
 
-Selecting `postgres` without it stops at startup and tells you the same thing.
+If you select `postgres` without it, the runtime stops at startup and tells you the same thing.
 
 | Variable | What it holds |
 |---|---|
 | `POSTGRES_URI` | The full connection string. |
 | `POSTGRES_SCHEMA` | The schema the collection tables live in. Defaults to `public`. |
 
-**`POSTGRES_URI` is optional.** Leave it blank and the driver reads the standard PostgreSQL variables instead — `PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD`, `PGDATABASE`. Use whichever your environment already provides; do not set both.
+**`POSTGRES_URI` is optional.** Leave it blank and the driver reads the standard PostgreSQL variables instead: `PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD`, `PGDATABASE`. Use whichever your environment already provides; do not set both.
 
 ### Object key order is not preserved
 
-PostgreSQL stores documents as `jsonb`, which normalises the keys of every JSON object — ordering them by key length, then by bytes. So a record written with its keys in one order reads back with them in another.
+PostgreSQL stores documents as `jsonb`, which normalises the keys of every JSON object, ordering them by key length, then by bytes. So a record written with its keys in one order reads back with them in another.
 
 **No value changes and nothing is lost.** Every field, every value and every provenance entry survives exactly. What differs is the order keys come back in. You notice it anywhere a listing prints in key order, such as the demo's consolidated-master output.
 
 This matters in one place beyond display: deciding whether a field changed. Prism compares field values structurally rather than by their serialised text. A value that came back with only its keys reordered is correctly seen as unchanged. Were it compared as text, a record with an object-valued field would appear to change on every single sync and never settle.
 
-Array order is preserved. A list is a list.
+Array order is preserved.
 
 ### A managed server needs TLS, and will not say so clearly
 
-A managed PostgreSQL — Azure Database for PostgreSQL among them — refuses a connection that does not negotiate TLS. The refusal does not mention TLS:
+A managed PostgreSQL (Azure Database for PostgreSQL among them) refuses a connection that does not negotiate TLS. The refusal does not mention TLS:
 
 ```
 no pg_hba.conf entry for host "203.0.113.10", user "prism", database "prism"
 ```
 
-That message reads like a firewall or permissions problem. It is neither. Set `PGSSLMODE` to `require` or `verify-full`, or put `?sslmode=require` on the end of `POSTGRES_URI`.
+That message reads like a firewall or permissions problem, but it is neither. Set `PGSSLMODE` to `require` or `verify-full`, or put `?sslmode=require` on the end of `POSTGRES_URI`.
 
 ## The local JSON store
 
@@ -86,9 +86,9 @@ Two processes writing to the same local store at the same time can lose a write.
 
 ## The backends do not share data
 
-**Nothing is copied between the backends, in any direction, at any time.** They are separate stores. A record written under one backend is not visible under another, and switching the value of `STORAGE_BACKEND` does not migrate anything.
+**Nothing is copied between the backends, in any direction, at any time.** They are separate stores. A record written under one backend is not visible under another. If you switch the value of `STORAGE_BACKEND`, nothing migrates.
 
-This matters because of how it looks from the operator's side. You switch the backend, you run a command, and every dataset is empty. Nothing reports an error, because nothing went wrong — you are reading a different store, and it is empty because it is new. A reader who expected continuity concludes the data was lost, and from that view it was.
+This matters because of how it looks from the operator's side. You switch the backend, you run a command, and every dataset is empty. Nothing reports an error, because nothing went wrong: you are reading a different store, and it is empty because it is new. A reader who expected continuity concludes the data was lost.
 
 Your records are still in the first backend. Set `STORAGE_BACKEND` back to its previous value to see them again.
 
@@ -96,9 +96,9 @@ Plan the switch as a data move, not as a configuration change.
 
 ## Every backend runs the whole product
 
-Every connector, the sync engine and the operator CLI work against any backend, with no change to any code. Prism reaches its store through one narrow interface, and all three backends implement it — the same interface test suite runs against each of them.
+Every connector, the sync engine and the operator CLI work against any backend, with no change to any code. Prism reaches its store through one narrow interface, and all three backends implement it; the same interface test suite runs against each of them.
 
-So the choice is about where the data lives and how many processes reach it. It is not about which features you get.
+So the choice is about where the data lives and how many processes reach it.
 
 | Question | Answer |
 |---|---|

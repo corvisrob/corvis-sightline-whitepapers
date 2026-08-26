@@ -24,7 +24,7 @@ The installer runs `wmill init`, which offers only the workspaces already regist
 wmill workspace add <profile-name> <workspace-id> <remote-url>
 ```
 
-Then run the installer.
+See [the Windmill workspace management page](https://www.windmill.dev/docs/advanced/cli/workspace-management) for what each argument holds. Then run the installer.
 
 ### What Corvis supplies
 
@@ -33,7 +33,7 @@ Two files. Put them in the same directory.
 | File | What it is |
 |---|---|
 | `install.mjs` | The installer. macOS, Linux and Windows. |
-| `sightline-prism-windmill-latest.tar.gz` | The workspace content, the compiled engine, and the connectors. |
+| `prism-windmill-<version>.tgz` | The workspace content, the compiled engine, and the connectors. |
 
 The installer reads the archive from its own directory. It downloads nothing, and it needs no access token. Without the archive beside it, the installer stops and names the file it expected.
 
@@ -49,7 +49,7 @@ node install.mjs --dir ./acme-prism-windmill --connectors crowdstrike,jira-asset
 | `--connectors` | The connectors to set up, as a comma-separated list. | No |
 | `--help` | Prints the usage. `-h` also works. | No |
 
-That is the whole list. The installer takes no other flag.
+The installer takes no other flag.
 
 ## What the installer does
 
@@ -63,15 +63,15 @@ That is the whole list. The installer takes no other flag.
 
 **Step 7 is where the installer ends.** Read [The install does not deploy](#the-install-does-not-deploy) before you expect a working workspace.
 
-**Nothing in this list overwrites existing work.** Each step tests for what it would create and skips when it finds it. Re-running the installer on an installed directory is safe, and it is how you add a connector later.
+**Nothing in this list overwrites existing work.** Each step tests for what it would create and skips when it finds it. Re-running the installer on an installed directory is how you add a connector later.
 
 ### The compiled code travels with the install
 
-The archive carries the compiled engine, connector SDK, shared review logic and connectors inside the directory it installs. It reads no other checkout, and it needs none. The operator CLI ships the same way: it compiles those packages into its own entry points. Neither install needs source on the machine.
+The archive carries the compiled engine, connector SDK, shared review logic and connectors inside the directory it installs. It reads no other checkout, and it needs none. The operator CLI ships the same way: it compiles those packages into its own entry points.
 
 ## The storage resource
 
-`install/setup-resource.mjs` sets up the connection to your store. The installer calls it, and it asks which backend first — `mongo` or `postgres` — then only for that backend's values.
+`install/setup-resource.mjs` sets up the connection to your store. The installer calls it, and it asks which backend first (`mongo` or `postgres`), then only for that backend's values.
 
 For **MongoDB**:
 
@@ -102,16 +102,26 @@ Either way the script stores the password as a Windmill secret variable and writ
 
 ## Connectors
 
-`install/connectors.json` is the catalog of connectors this layer can deploy. Each entry names a collector template, a resource type, and the credential fields to ask for.
+For each connector you name, the installer asks for an instance name first, then the credentials, then the settings. It writes one resource, `f/prism/<connector>_<instance>_manifest`, and copies that connector's scripts into `f/prism/`.
+
+**That manifest is the instance.** It holds which connector it is, the instance name, the credentials it authenticates with, and the settings it collects by. A second instance of the same connector is a duplicate of the resource with `instance` changed. There is no second place that has to agree with the first.
+
+**A secret never reaches a file in the repository.** The installer pushes it as a Windmill secret variable and stores a `$var:` pointer to it in the manifest. Two instances of one connector point at the same variable, so a rotated token is one edit in one place.
+
+### The catalogue
+
+`install/connectors.json` is the catalogue of connectors this layer can deploy.
 
 ```jsonc
 "<connector-name>": {
   "template": "<collector-template-file>",
-  "resourceType": "<windmill-resource-type>",
+  "discoverTemplate": "<discover-template-file>",
   "fields": [
-    { "name": "<field-name>", "secret": false },
-    { "name": "<field-name>", "secret": true },
-    { "name": "<field-name>", "secret": false, "default": "<default-value>" }
+    { "name": "<field-name>", "secret": false, "hint": "<prompt hint>" },
+    { "name": "<field-name>", "secret": true }
+  ],
+  "configFields": [
+    { "name": "<field-name>", "default": "<default-value>" }
   ]
 }
 ```
@@ -119,16 +129,31 @@ Either way the script stores the password as a Windmill secret variable and writ
 | Key | What it does |
 |---|---|
 | `template` | The collector template copied into the workspace for this connector. |
-| `resourceType` | The Windmill resource type the credentials are pushed as. |
-| `fields` | The values the installer asks for, in order. |
+| `discoverTemplate` | The discover script copied in beside the collector. Every catalogue connector names one. |
+| `fields` | The credential values the installer asks for, in order. They land in the manifest's `credentials`. |
+| `configFields` | The non-secret settings it asks for, in order. They land in the manifest's `config`. |
 | `secret` | When true, the prompt is masked and the value is stored as a Windmill secret variable. |
 | `default` | Offered at the prompt. Press enter to accept it. |
+| `hint` | Shown beside the prompt, to say where the value comes from. |
 
 **To change which connectors are available, edit this file.** Add an entry, name a template that exists, and list the fields that connector needs. A connector name the installer cannot find in this file is rejected, and the installer tells you to add it.
 
-Four connectors ship in the catalog: `crowdstrike`, `cylance`, `azure-vms` and `jira-assets`.
+Four connectors ship in the catalogue: `crowdstrike`, `cylance`, `azure-vms` and `jira-assets`.
 
-**A secret field never reaches a file in the repository.** The installer pushes it as a Windmill secret variable and stores a reference to it in the resource.
+### Every connector reports what it collects
+
+Each catalogue entry names a `discoverTemplate`, and the installer deploys that script beside the collector. After the deploy, open the review app, choose **Connectors**, configure an instance, and choose **Refresh fields**.
+
+What comes back depends on how the connector knows its fields.
+
+| The connector | What a refresh does |
+|---|---|
+| Reads its source's catalogue, as `jira-assets` does | Asks the source, and returns its fields with the keys to map them to. Every Jira site assigns its own `customfield_NNNNN` values, so the ids cannot be shipped |
+| Has a fixed record shape, as `crowdstrike`, `cylance` and `azure-vms` do | Returns the paths the connector declares, without contacting the source. There is nothing to map |
+
+Refresh an instance before you collect from it. The [recipe](/docs/prism/install/bootstrap) works an example through in full.
+
+A connector's fixed shape is fixed until the connector changes it. Refreshing after an upgrade is how a newly collected path reaches the operator.
 
 ## The install does not deploy
 
@@ -141,7 +166,7 @@ cd ../acme-prism-windmill
 wmill sync push
 ```
 
-This is deliberate. You see the whole change set before anything reaches your workspace.
+This is deliberate: you see the whole change set before anything reaches your workspace.
 
 **Confirm the deployment landed.** Run the preview again:
 
@@ -162,13 +187,13 @@ ls wmill.yaml f/prism/storage.resource.yaml
 
 **Expected output.** Both paths, each listed once. A missing `wmill.yaml` means `wmill init` did not complete, and the directory is not bound to a workspace.
 
-Then confirm each connector you named has its credentials resource:
+Then confirm each connector you named has its instance manifest:
 
 ```bash
-ls f/prism/*_credentials.resource.yaml
+ls f/prism/*_manifest.resource.yaml
 ```
 
-**Expected output.** One file for each connector you named, such as `f/prism/crowdstrike_credentials.resource.yaml`.
+**Expected output.** One file for each connector you named, such as `f/prism/crowdstrike_prod_manifest.resource.yaml`.
 
 Then preview the deployment again. It changes nothing, so it is safe to repeat:
 
@@ -188,7 +213,7 @@ node install.mjs --dir ./acme-prism-windmill --connectors cylance
 
 The installer detects the existing install and adds to it. It skips the workspace binding and the storage resource, and sets up only the new connector.
 
-To redo a connector's credentials, delete its resource file first. The installer skips a connector whose resource file is already present.
+To redo a connector's credentials, delete its manifest file first. The installer skips a connector that already has one, and it names the file to delete when it does.
 
 ## Where to go next
 

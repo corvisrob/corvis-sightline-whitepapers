@@ -1,8 +1,8 @@
-Two browsing workflows answer the same question from different ends: **what happened to this data?**
+Two browsing workflows answer the same question from different ends: what happened to this data?
 
 Browse changesets to see what a sync proposed and what became of it. Browse a dataset to see what a record looks like now, and which source each of its values came from.
 
-**Start in your [runtime instance](/docs/prism/install/runtime-instance).**
+Start in your [runtime instance](/docs/prism/install/runtime-instance).
 
 ```bash
 cd acme-central
@@ -25,7 +25,7 @@ Inside a changeset, each row shows the record and field, the old value against t
 
 ### Rolling a changeset back
 
-**`r` rolls back the changeset**, and it is offered only when the changeset was actually applied — its status is `applied` or `partial`. There is nothing to undo on a changeset that was never applied, so the key does not appear.
+`r` rolls back the changeset, and it is offered only when the changeset was actually applied: its status is `applied` or `partial`. There is nothing to undo on a changeset that was never applied, so the key does not appear.
 
 `r` opens a confirmation. `y` commits the rollback and `n` returns.
 
@@ -35,17 +35,17 @@ Inside a changeset, each row shows the record and field, the old value against t
 
 Choose **Browse a dataset's records**, then pick a dataset. From there you can filter, sort, page through the records, and open one.
 
-The available keys are shown along the bottom of each view. Read that line rather than memorising a set — it changes with the view you are in.
+The available keys are shown along the bottom of each view. Read that line rather than memorising a set; it changes with the view you are in.
 
 ### Field-level provenance is the point
 
 Opening a record is worth doing because of what the record carries beside each value.
 
-A merged record does not just hold a value. For each field it also holds **the source that supplied it and that source's priority**. Both appear next to the field, as a source name and a priority number. A field no source has claimed yet is marked as new.
+A merged record does not just hold a value. For each field it also holds the source that supplied it and that source's priority. Both appear next to the field, as a source name and a priority number. A field no source has claimed yet is marked as new.
 
 That is what makes a consolidated dataset auditable. When a value looks wrong, the record names the connector that proposed it and how strongly. That is usually enough to choose between fixing the source, changing a priority, and declining the value at review.
 
-[Data model](/docs/prism/architecture/data-model) explains how provenance is stored. This page is about reading it.
+[Data model](/docs/prism/architecture/data-model) explains how provenance is stored.
 
 ## Where to go next
 

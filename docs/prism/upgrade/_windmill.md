@@ -46,73 +46,57 @@ That is the whole list. The updater takes no other flag.
 
 `--archive` names a file beside the updater, or a path. It is how you refresh from a named version rather than the latest archive.
 
-## ⚠️ Run the dry run first
+## Run the dry run first
 
-**A dry run is available and worth the minute it costs.** It is the only way to see what a release retires from your install before it goes — see [What the updater deletes](#what-the-updater-deletes).
+**A dry run is available and worth the minute it costs.** It shows what the release changes in your install before anything moves.
 
 ```bash
 node update.mjs --dir ../acme-prism-windmill --dry-run
 ```
 
-**Expected output.** An itemised list of the files the updater would add, change and **delete**, followed by a line stating that nothing changed. Read the deletions.
+**Expected output.** An itemised list of the files the updater would add or change, then a per-directory count, then a line stating that nothing changed.
+
+Each directory's line also counts the files your install holds that this release does not carry. They are listed as `kept`, and the updater leaves them alone. A file appearing there after an upgrade is usually a script the release renamed, so read the list.
 
 The dry run stops after the file listing. It does not go on to preview the deployment.
 
-## What is preserved and what is replaced
+## What is replaced and what is kept
 
-The updater replaces archive content and protects deployment-specific state.
+The refresh copies one way and deletes nothing. An install directory is not a checkout of the archive. Operators create resources in it, connectors are set up into it, and instances live there as files. A file the archive does not carry was put there by someone, so the updater leaves it and reports it as `kept`.
 
-**Replaced** — refreshed from the archive:
+**Replaced**, refreshed from the archive:
 
 | Path | What it holds |
 |---|---|
-| `f/` | The review-app scripts, and the archive's own collector script |
-| `windmill/` | The collector templates |
+| `f/` | The review-app scripts, and the archive's own connector scripts |
+| `windmill/` | The collector and discover templates |
 | `vendor/` | The compiled engine, connector SDK, review logic and connectors |
+| `*.resource-type.yaml` | The resource types at the install root |
 
 `vendor/` is refreshed on purpose. Leaving it behind would run the previous release's engine against this release's scripts. That mismatch surfaces as a missing export at deploy time, not as a version error.
 
-**Preserved** — never touched:
+**Kept**, never overwritten:
 
 | Path | What it holds |
 |---|---|
 | `wmill.yaml` | The workspace binding |
 | `wmill-lock.yaml` | The deployment lock |
 | `f/prism/storage.resource.yaml` | Your storage connection resource (MongoDB or PostgreSQL) |
-| `f/prism/*_credentials.resource.yaml` | Your connector credential resources |
+| `f/prism/*_manifest.resource.yaml` | Your connector instances: identity, credentials and settings |
 | `f/prism/<connector>_collect.ts` | The deployed collector script of every connector set up in this install |
 | `u/<user>/` | Per-user content |
 
 Your credentials survive an upgrade. You do not re-enter them.
 
-## What the updater deletes
+**A manifest is an instance**, so losing one loses the instance. The updater never writes over a `*_manifest.resource.yaml`, whatever the archive holds.
 
-The refresh is a mirror, not a merge. Anything under `f/`, `windmill/` or `vendor/` that the archive does not carry — and that is not on the preserved list above — **is deleted**.
+A collector script the archive does not ship is always yours, so the updater always keeps it. That includes one left behind by a connector setup you interrupted before entering its credentials. Where the archive does ship a collector, an instance manifest decides. With one present, the install has its own copy to keep. Without one, the archive's copy refreshes normally.
 
-That is deliberate, and it is what the dry run is for. It is how a script this release retires leaves your install, and how the previous release's engine chunks leave `vendor/`.
+## The updater corrects three wmill.yaml flags
 
-**Your own deployment state is not in that set.** The updater does not work from a fixed list of files to spare. It reads the install: your storage resource, every connector credential resource, and every collector script the installer put there. Set a connector up and it keeps both halves — the credentials and the script they drive — through every later refresh.
+`skipVariables`, `skipSecrets` and `skipResources` must all be `true`. The updater sets any that is not, and reports which it changed.
 
-A collector script the archive does not ship is always yours, so the updater always keeps it. That includes one left behind by a connector setup you interrupted before entering its credentials. The one collector the archive does ship, for `jira-assets`, is kept where you have that connector set up here. Otherwise the updater refreshes it from the archive.
-
-### Restoring a collector script an older updater deleted
-
-Earlier updaters spared a fixed list of files that named neither the collector scripts nor, after the 3.0.0 rename, the storage resource. An upgrade run by one of those deleted the collector script of every connector except `jira-assets`, and left its credential resource behind. It could also delete `f/prism/storage.resource.yaml` outright.
-
-If [Verify the upgrade](#verify-the-upgrade) finds a credential resource with no matching collector script, this is why.
-
-**Re-running the installer does not restore it.** The installer skips any connector whose credential resource file is already present. That file survived, so the connector is skipped and the script stays missing.
-
-Remove the credential resource first, then re-run the installer for that connector and enter its credentials again:
-
-```bash
-cd ../acme-prism-windmill
-rm f/prism/<connector>_credentials.resource.yaml
-cd ../sightline-prism-windmill
-node install/install.mjs --dir ../acme-prism-windmill --connectors <connector>
-```
-
-A missing `f/prism/storage.resource.yaml` is recovered the same way the [3.0.0 migration](#upgrading-to-300-is-a-breaking-change) creates one. The updater now refuses to run at all until it is back.
+Variables, secrets and resources are all managed outside the sync. The installer pushes them directly, and an instance created by duplicating a manifest in the Windmill user interface has no local file at all. In sync scope each of those reads as deleted, so a `wmill sync push` with any of the three flags left `false` removes them from the workspace. A secret variable is the only copy of a credential.
 
 ## The update does not deploy
 
@@ -144,13 +128,13 @@ ls wmill.yaml f/prism/storage.resource.yaml
 
 **Expected output.** Both paths, each listed once. A missing `wmill.yaml` means the updater did not run against an existing install.
 
-Then confirm each connector you run still has both halves — its credential resource **and** its collector script:
+Then confirm each connector you run still has both halves, its instance manifest and its collector script:
 
 ```bash
-ls f/prism/*_credentials.resource.yaml f/prism/*_collect.ts
+ls f/prism/*_manifest.resource.yaml f/prism/*_collect.ts
 ```
 
-**Expected output.** A matching pair for each connector you run. A credential resource with no matching collect script means an older updater deleted it — [restore it](#restoring-a-collector-script-an-older-updater-deleted) before you deploy.
+**Expected output.** A matching pair for each connector you run. A manifest with no matching collect script means the script was lost before this updater, and the connector cannot run until it is back. Delete that manifest and re-run the installer for the connector, which asks for the credentials again.
 
 ## Where to go next
 

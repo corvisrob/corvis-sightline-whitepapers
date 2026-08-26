@@ -1,14 +1,14 @@
 The review app is the browser interface to the same operations the operator CLI provides. It runs in your Windmill workspace, and it is one of the two interfaces to a single product rather than a product of its own.
 
-**It mirrors the review TUI closely, but no longer entry for entry.** It records the same decisions, with the same effects on your data. It adds two operations the terminal has no equivalent for, which cover a source whose connector cannot run.
+**It mirrors the review TUI closely, but no longer entry for entry.** It records the same decisions, with the same effects on your data. It adds the operations the terminal has no equivalent for: configuring a connector instance, and reaching a source whose connector cannot run.
 
-**This page tells you where each operation is. It does not repeat the procedures** — those are written once, for both interfaces, and linked below. Following a stale second copy is exactly the failure this structure avoids.
+**This page tells you where each operation is. It does not repeat the procedures**: those are written once, for both interfaces, and linked below.
 
 Choose by where the operator is, not by capability. Someone on a jump host uses the CLI. Someone who needs to hand a review to a colleague without shell access uses the app.
 
 ## Getting there
 
-Open your Windmill workspace and start the review app. [Installing Windmill-hosted Prism](/docs/prism/install/windmill) covers deploying it; [Upgrading Windmill-hosted Prism](/docs/prism/upgrade/windmill) covers moving it forward.
+Open your Windmill workspace. Start the review app. [Installing Windmill-hosted Prism](/docs/prism/install/windmill) covers deploying it; [Upgrading Windmill-hosted Prism](/docs/prism/upgrade/windmill) covers moving it forward.
 
 The app reads the same store as the CLI. A changeset you leave pending in one appears in the other.
 
@@ -16,15 +16,36 @@ The app reads the same store as the CLI. A changeset you leave pending in one ap
 
 | Menu entry | What it does | Procedure |
 |---|---|---|
-| **Review pending changes** | Walk each proposed field change and decide it | [Review and apply changesets](/docs/prism/usage/review-changesets) |
-| **Browse all changesets** | Every changeset, its detail, and rollback | [Browse datasets and changesets](/docs/prism/usage/browse) |
-| **Browse a dataset's records** | Filter, sort, page and open a master record | [Browse datasets and changesets](/docs/prism/usage/browse) |
-| **Re-run a sync rule** | Run one rule now, including a rule with a remote target | [Run a sync rule](/docs/prism/usage/sync) · [Run a write-back](/docs/prism/usage/write-back) |
-| **Manage deferrals** | Browse and remove permanent suppressions | [Manage deferrals](/docs/prism/usage/deferrals) |
-| **Manage rules** | Enable, disable, edit and create rules | [Create and edit rules](/docs/prism/usage/manage-rules) |
-| **Run a script** | Run a deployed collector or write-back script and see its result | [Run a collector](/docs/prism/usage/collect) · [Run a write-back](/docs/prism/usage/write-back) |
-| **Upload a document into a source's inbox** | Put a JSON document into a remote source's inbox by hand, for a source whose collector cannot run | No terminal equivalent — see below |
-| **Complete a source's pending write-backs** | Read a source's queued writes, download them, and mark the ones you performed as done | [Run a write-back](/docs/prism/usage/write-back) |
+| **Review** | Walk each proposed field change and decide it | [Review and apply changesets](/docs/prism/usage/review-changesets) |
+| **Browse** | Every changeset, its detail, and rollback | [Browse datasets and changesets](/docs/prism/usage/browse) |
+| **Browse data** | Inboxes, local tables and outboxes: what a collector landed, what the rules merged, and what is queued to go back | [Browse datasets and changesets](/docs/prism/usage/browse) · [Run a write-back](/docs/prism/usage/write-back) |
+| **Re-run** | Run one rule now, including a rule with a remote target | [Run a sync rule](/docs/prism/usage/sync) · [Run a write-back](/docs/prism/usage/write-back) |
+| **Deferrals** | Browse and remove permanent suppressions | [Manage deferrals](/docs/prism/usage/deferrals) |
+| **Rules** | Enable, disable, edit and create rules | [Create and edit rules](/docs/prism/usage/manage-rules) |
+| **Connectors** | Configure a connector instance: read its fields, map them, collect from it, and write back to it | [Recipe](/docs/prism/install/bootstrap) § Part 4 |
+| **Upload** | Put a JSON document into a remote source's inbox by hand, for a source whose collector cannot run | No terminal equivalent, see below |
+
+### Browse data holds three views
+
+Data moves inbox to local table to outbox, and each step answers a different question about the same records.
+
+| View | What it answers |
+|---|---|
+| **Inboxes** | What a collector landed, before any rule has read it |
+| **Local tables** | A consolidated dataset's records, after the rules merged them |
+| **Outboxes** | A source's pending write-backs, and the screen that records the ones you performed by hand |
+
+**Inboxes is where you confirm a collection.** A collector reports success even where the transmit is skipped, and a local table stays empty until a sync rule runs against the inbox.
+
+### Connectors is where an instance is configured
+
+A connector instance is one manifest resource, holding its identity, its credentials and its settings. The screen lists them, and drilling into one gives the run controls and what that instance collects.
+
+**Refresh fields** asks the connector what it offers, and every connector answers. One that reads its source's catalogue, such as `jira-assets`, returns that source's fields and the keys you map them to. One with a fixed record shape, such as `crowdstrike`, returns the paths it collects and nothing to map, without contacting the source. An instance cannot collect until it has been refreshed once, because until then nothing says which fields that connector needs.
+
+A connector with no write-back script shows no **Write back now**.
+
+To add an instance, duplicate a manifest resource in Windmill and change `instance`. It appears in the list with nothing to register.
 
 ## What differs from the CLI
 
@@ -34,9 +55,9 @@ The decisions and their effects are identical. A few practical differences are w
 
 **There is no starting directory.** The CLI procedures open by telling you to change into a runtime instance. The app is already bound to a workspace and its store, so that step does not apply.
 
-**Creating a rule does not ask which kind.** [Create and edit rules](/docs/prism/usage/manage-rules) says `n` asks for sync or reverse before the form. The app has no such step. Pick the target dataset and the direction follows it, exactly as it does at run time: a local target merges, a remote one pushes. The app only asks when it cannot tell, which means the target is not in the table registry. The rule you end up with is the same either way.
+**Creating a rule does not ask which kind.** [Create and edit rules](/docs/prism/usage/manage-rules) says `n` asks for sync or reverse before the form. The app has no such step. Pick the target dataset and the direction follows it, exactly as it does at run time: a local target merges, a remote one pushes. The app only asks when it cannot tell, which means the target is not in the table registry.
 
-**Two entries have no terminal counterpart.** **Upload a document into a source's inbox** and **Complete a source's pending write-backs** both cover a source that no connector can reach. One puts data in. The other takes the queued writes out. The CLI has no command for either. The screens carry their own guidance, and [Run a write-back](/docs/prism/usage/write-back) explains what completing a write-back means.
+**Two operations have no terminal counterpart.** **Upload** and the **Outboxes** view under **Browse data** both cover a source that no connector can reach. One puts data in. The other takes the queued writes out. The CLI has no command for either. The screens carry their own guidance, and [Run a write-back](/docs/prism/usage/write-back) explains what completing a write-back means.
 
 Everything else in the linked procedures reads the same in either interface.
 

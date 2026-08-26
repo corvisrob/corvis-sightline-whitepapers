@@ -1,10 +1,10 @@
-This is the shortest path from an installed Prism to a merged record you decided yourself. **It needs no credentials.**
+This is the shortest path from an installed Prism to a merged record you decided yourself. It needs no credentials.
 
 Two connectors generate synthetic records instead of contacting a real system: `aws-ec2-mock` and `jira-assets-mock`. The whole cycle below runs on those.
 
 **Before you start**, complete [Installing Prism](/docs/prism/install/prism) with those two connectors, and choose a storage backend in [Storage backends](/docs/prism/install/storage-backends). The local backend is the least setup for a first run.
 
-**Every command runs from your [runtime instance](/docs/prism/install/runtime-instance).**
+Every command runs from your [runtime instance](/docs/prism/install/runtime-instance).
 
 ```bash
 cd acme-prism
@@ -19,9 +19,9 @@ npx prism-collect-aws-ec2-mock demo
 npx prism-collect-jira-assets-mock demo
 ```
 
-**Expected output.** Each run ends with a transmit line naming the inbox it wrote to. Two collectors, two inboxes, two snapshots.
+**Expected output.** Each run ends with a transmit line naming the inbox it wrote to. Each collector produces its own inbox entry and snapshot.
 
-You now have records from two sources that do not agree with each other. That disagreement is the point.
+You now have records from two sources that do not agree with each other.
 
 ## Step 2 — Merge them
 
@@ -33,9 +33,9 @@ npx prism-sync <rule-id>
 
 Use a rule that reads one of the mock sources. [Create and edit rules](/docs/prism/usage/manage-rules) covers writing one if your instance has none.
 
-**Expected output.** A per-change summary. Changes in `auto` mode are applied. Changes in `review` mode are left **pending** — those are the ones you decide next.
+**Expected output.** A per-change summary. Changes in `auto` mode are applied. Changes in `review` mode are left **pending**. Those are the ones you decide next.
 
-If everything applied automatically and nothing is pending, the rule's field modes are all `auto`. Set one to `review` and run it again, so there is something to review.
+If everything applied automatically and nothing is pending, the rule's field modes are all `auto`. Set one to `review`. Run it again, so there is something to review.
 
 ## Step 3 — Decide the pending changes
 
@@ -45,7 +45,7 @@ npx prism-review
 
 Choose **Review pending changes**.
 
-Each row is one proposed field change, with the source that proposed it and that source's priority. Approve with `a`, reject with `r`, then `enter` and `y` to commit.
+Each row is one proposed field change, with the source that proposed it and that source's priority. Approve with `a`, reject with `r`. Then press `enter` and `y` to commit.
 
 The full procedure, including what decline does that reject does not, is in [Review and apply changesets](/docs/prism/usage/review-changesets).
 
@@ -57,11 +57,9 @@ The full procedure, including what decline does that reject does not, is in [Rev
 npx prism-review
 ```
 
-Choose **Browse a dataset's records**, pick your consolidated dataset, and open a record.
+Choose **Browse a dataset's records**. Pick your consolidated dataset. Open a record.
 
 **Expected output.** The merged record, with each field showing the source that supplied its value and that source's priority.
-
-Two disagreeing sources produced that record. Every value on it names where it came from, and carries the decision you made about it.
 
 ## What to do next
 

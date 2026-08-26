@@ -44,31 +44,54 @@ Add custom fields for asset properties:
 | Serial Number | Text | `serialNumber` | Hardware serial |
 | Manufacturer | Text | `manufacturer` | Vendor/manufacturer |
 | Model | Text | `model` | Model/SKU |
-| Host Name | Text | `hostName` | Optional - lets this instance identity-link by hostname instead of serial (see `extendedData.hostname` in the transformed asset) |
+| Host Name | Text | `hostName` | Required. Both sync directions match on it (see `extendedData.hostname` in the transformed asset) |
 | MAC Address | Text | `mac` | Optional - exposed as `extendedData.jiraMacAddress` |
 
-**Note**: field IDs are per-instance configuration. Set `config.fieldIds` in
-`.connectors/jira-assets.<instance>/manifest.json` to your project's actual
-`customfield_XXXXX` ids. Override only the ids your project uses; the rest fall
-back to this connector's defaults.
+**Field ids are per-instance.** Every Jira site numbers its own custom fields, so this
+connector ships no ids of its own. Set `config.fieldIds` in
+`.connectors/jira-assets.<instance>/manifest.json` to the ids your site assigned. Section 3
+reads them for you.
+
+`hostName` is required. Both sync directions match on it, and a collect without it stops
+and names the missing key.
+
+The ids below are illustrative. Every site numbers its own fields, so yours are different.
 
 ```json
 {
   "config": {
     "baseUrl": "https://your-domain.atlassian.net",
     "projectKey": "ASSET",
-    "fieldIds": { "assetId": "customfield_10101", "ip": "customfield_10104" }
+    "fieldIds": { "hostName": "customfield_10001", "ip": "customfield_10002" }
   }
 }
 ```
 
-### 3. Get Custom Field IDs
+### 3. Read the field ids
+
+Run discovery against the instance:
 
 ```bash
-curl -u email@company.com:api_token \
-  https://your-domain.atlassian.net/rest/api/3/field \
-  | jq '.[] | select(.name | contains("Asset")) | {name, id}'
+npm run discover:jira-assets -- <instance>
 ```
+
+Discovery asks Jira for its field catalogue and writes every custom field to the
+manifest's `discovery` key:
+
+```json
+{
+  "discovery": {
+    "discoveredAt": "2026-08-26T03:04:19.624Z",
+    "fields": [
+      { "id": "customfield_10001", "name": "Host Name", "type": "string" },
+      { "id": "customfield_10002", "name": "IP Address", "type": "string" }
+    ]
+  }
+}
+```
+
+Copy the ids you need into `config.fieldIds`. Discovery never writes `config`, so
+re-running it leaves your choices alone.
 
 ## Running Locally
 
@@ -128,8 +151,8 @@ async function fetchJiraAssets(): Promise<JiraIssue[]> {
             'labels',
             'created',
             'updated',
-            'customfield_10100', // Add your custom field IDs
-            'customfield_10101',
+            'customfield_XXXXX', // your own ids, read from the discovery key
+            'customfield_YYYYY',
             // ... etc
           ],
         },
@@ -187,10 +210,10 @@ jql: `project = ASSET AND updated >= -30d ORDER BY updated DESC`
 | `fields.summary` | `name` | Issue summary as asset name |
 | `fields.description` | `description` | Issue description |
 | `fields.labels` | `tags` | Labels as tags |
-| `customfield_10101` | `id` | Asset ID custom field |
-| `customfield_10100` | `type` | Asset type (computer/network/etc) |
-| `customfield_10102` | `location.building` | Location text |
-| `customfield_10103` | `ownership.owner` | Owner email/name |
+| the `assetId` field id | `id` | Falls back to the issue key when unset |
+| the `assetType` field id | `type` | Asset type (computer/network/etc) |
+| the `location` field id | `location.building` | Location text |
+| the `owner` field id | `ownership.owner` | Owner email/name |
 
 ### Extended Data
 
@@ -208,23 +231,13 @@ Jira-specific fields stored in `extendedData`:
 
 ## Custom Field Mapping
 
-Update the connector to match your Jira instance:
+Match the connector to your Jira site through the manifest. There is no code to edit.
 
-```typescript
-// 1. Find your custom field IDs
-// Run: curl -u email:token https://your-domain.atlassian.net/rest/api/3/field
+1. Run `npm run discover:jira-assets -- <instance>` to read your site's field ids.
+2. Read the ids out of the manifest's `discovery` key.
+3. Set them under `config.fieldIds`, keyed by the names in the table above.
 
-// 2. Update interface in collect.ts
-interface JiraIssue {
-  fields: {
-    // ... standard fields
-    customfield_XXXXX?: string; // Your actual field ID
-  };
-}
-
-// 3. Update transform function
-const assetId = fields.customfield_XXXXX || issue.key;
-```
+The connector reads each value by its configured id at collect time.
 
 ## Filtering by Asset Type
 
@@ -232,7 +245,7 @@ Route to specific schemas based on asset type:
 
 ```typescript
 function transformToSpecificSchema(issue: JiraIssue): any {
-  const assetType = issue.fields.customfield_10100;
+  const assetType = issue.fields.customfield_XXXXX; // the id configured as `assetType`
   
   switch (assetType) {
     case 'computer':
