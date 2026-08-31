@@ -269,13 +269,28 @@ Choose **Rules**. [Create and edit rules](/docs/prism/usage/manage-rules) covers
 
 This hosting keeps rules in the `rules` collection in your store. There is no `rules` directory and no file to load, so the editor is how a rule gets in and how it changes.
 
+### Where the consolidated dataset comes from
+
+A connector's dataset registers itself the first time that connector collects. `consolidated-assets` belongs to no connector, so nothing registers it that way. The installer declares it as a `prism_local_table` resource in your workspace.
+
+A declaration is not yet a dataset. The engine reads its own table registry from the store, not from Windmill, and it refuses a rule whose target that registry does not hold. Two things reconcile the declarations into it, and both are steps you were taking anyway:
+
+- Opening **Rules**. The screen reads the dataset list, and that read reconciles first.
+- Running a rule from **Re-run**. It reconciles before the rule starts.
+
+So a declared dataset is ready by the time you can name it in a rule. Nothing has to be run by hand, and re-running either costs nothing: the reconcile writes only what the declarations say and repeats safely.
+
+**To add a second consolidated dataset**, duplicate `f/prism/consolidated_assets_table` in Windmill and change its `id`. Open **Rules** once afterwards, which is where the new id joins the dataset lists.
+
+**To declare one while writing a rule**, name a merge target that nothing declares yet. The editor says so and offers to declare it, which creates the resource and registers it in one step.
+
 ### How the editor presents a rule
 
 The editor has two modes, and a button switches between them.
 
 **Visual** is a grid. Each row is one field mapping. The **Add mapping** button appends a row. The rule's id, name, source, target, target schema and enabled flag sit above the grid.
 
-**Raw** is the rule as JSON in a Monaco editor. The editor parses the JSON as you type. It blocks the switch back to Visual while the JSON does not parse. It disables **Save** while any expression is invalid, and while any mapping has an empty source or target.
+**Raw** is the rule as JSON in a Monaco editor. It is where the settings with no control live, such as `reconcilePresence`, `newAssetMode` and `presenceGuard`. The editor parses the JSON as you type. It blocks the switch back to Visual while the JSON does not parse. It disables **Save** while any expression is invalid, and while any mapping has an empty source or target.
 
 The grid columns follow the rule's direction.
 
@@ -307,16 +322,22 @@ Reserve `review` for fields where a wrong value is expensive, such as security p
 | Target | `consolidated-assets` |
 | Target schema | `AssetComputer` |
 
-The grid does not hold the identity keys or `sourceIdField`. Set them in Raw. They decide when two records describe the same machine.
+Fill in the **Identity** panel above the grid. It decides when two records describe the same machine. A rule that gets it wrong still runs, and writes a new master record for every host.
+
+| Identity field | Value |
+|---|---|
+| This source's own id | `id` |
+| Master field `hostname` matches | `hostname` |
+| Master field `mac` matches | `network.0.macAddress` |
+| When two values tie on priority | `newer` |
+
+`reconcilePresence` has no control. Set it in Raw, where it defaults to absent:
 
 ```json
-"sourceIdField": "id",
-"identityKeys": { "hostname": "hostname", "mac": "network.0.macAddress" },
-"reconcilePresence": false,
-"tieBreak": "newer"
+"reconcilePresence": false
 ```
 
-⛔ `tieBreak` is not optional here, although the schema treats it as optional. A field already holds a CrowdStrike value at priority 85. CrowdStrike reports a new value for it, also at priority 85. That is an exact tie, and the default resolves a tie by keeping what is there. The update is shadowed, and CrowdStrike can never revise its own reading. The value `newer` lets the incoming value win a tie, which is what an agent-reported field needs. A tie between two different sources cannot arise here, because no two mappings give the same target field the same priority.
+⛔ The tie-break is not optional here, although the rule schema treats it as optional. A field already holds a CrowdStrike value at priority 85. CrowdStrike reports a new value for it, also at priority 85. That is an exact tie, and the default resolves a tie by keeping what is there. The update is shadowed, and CrowdStrike can never revise its own reading. The value `newer` lets the incoming value win a tie, which is what an agent-reported field needs. A tie between two different sources cannot arise here, because no two mappings give the same target field the same priority.
 
 Then add the mappings.
 
@@ -348,16 +369,21 @@ Note the shape of a source field. It uses dots, and it indexes an array by posit
 | Target | `consolidated-assets` |
 | Target schema | `BaseAsset` |
 
+Fill in the **Identity** panel again.
+
+| Identity field | Value |
+|---|---|
+| This source's own id | `extendedData.jiraIssueKey` |
+| Master field `hostname` matches | `extendedData.hostname` |
+| When two values tie on priority | `newer` |
+
 ```json
-"sourceIdField": "extendedData.jiraIssueKey",
-"identityKeys": { "hostname": "extendedData.hostname" },
-"reconcilePresence": false,
-"tieBreak": "newer"
+"reconcilePresence": false
 ```
 
-⛔ `sourceIdField` must be `extendedData.jiraIssueKey`, not `id`. The value it names becomes the native id in the master's cross-reference, and rule 6c addresses its write-back by that native id. The Jira collector sets `id` to the Asset ID field. It falls back to the issue key only while that field is empty. So `id` is the issue key until the first write-back populates Asset ID, and the Prism master record id from then on. A rule that keys on `id` therefore works, pushes once, and then addresses every later write to an issue key that does not exist. Naming the issue key directly does not move.
+⛔ The source's own id must be `extendedData.jiraIssueKey`, not `id`. The value it names becomes the native id in the master's cross-reference, and rule 6c addresses its write-back by that native id. The Jira collector sets `id` to the Asset ID field. It falls back to the issue key only while that field is empty. So `id` is the issue key until the first write-back populates Asset ID, and the Prism master record id from then on. A rule that keys on `id` therefore works, pushes once, and then addresses every later write to an issue key that does not exist. Naming the issue key directly does not move.
 
-`tieBreak` is set for the same reason as [rule 6a](#6a-crowdstrike-to-the-consolidated-dataset): without it Jira cannot revise a field it already owns, such as the owner.
+The tie-break is `newer` for the reason [rule 6a](#6a-crowdstrike-to-the-consolidated-dataset) gives. Left on `keep`, Jira cannot revise a field it already owns, such as the owner.
 
 `extendedData.hostname` holds whatever field you mapped to `hostName` in Part 4. The match on it joins a Jira issue to the machine that CrowdStrike already reports.
 
@@ -396,19 +422,26 @@ Substitute your own ids. The ids above are examples and do not match your site.
 
 `hostname` appears twice on purpose. The first mapping writes the issue summary, so a person can read the issue. The second writes the Host Name field, so rule 6b can match on it next time.
 
-**Mirror creates an issue for a machine that Jira does not hold.** Without mirror, this rule updates existing issues only. With mirror, a master record that holds no Jira link proposes a new issue.
+### What happens to a machine Jira does not hold
 
-```json
-"mirror": {
-  "mode": "review",
-  "createFields": {
-    "project":   { "key": "ASSET" },
-    "issuetype": { "name": "Computer" }
-  }
-}
-```
+A push writes to an issue that already exists. It finds that issue by the key rule 6b recorded on the master record. A master with no Jira key therefore has no address, and this rule skips that machine silently on every run.
 
-The value `review` puts every creation behind a person. The engine creates all fields for a host or none of them. It then writes the returned issue key into that master record's identity, and it never proposes the host again.
+The **Missing records** panel is where you decide that. Tick **Create a record when the target has none**.
+
+| Control | This recipe |
+|---|---|
+| Before creating a record | `review` |
+| Fields every new record is created with | `{"project": {"key": "ASSET"}, "issuetype": {"name": "Computer"}}` |
+
+**`review` puts every creation behind a person.** Choose it for the first runs. A creation is not reversible from the review screen: once approved, the issue exists in Jira, and rejecting it later does not remove it. A first run proposes one issue for every unlinked machine at once, which is the moment to have a person read the list.
+
+**The create fields are what Jira needs before it accepts a new issue at all.** Jira refuses a new issue that names no project and no issue type, and Prism can infer neither, so the rule carries them. They apply to every issue this rule creates. The grid's field mappings are written on top of them: `summary` and the custom fields come from the master record, `project` and `issuetype` from here.
+
+Another target system needs its own fields. The panel takes any JSON object, and what belongs in it is whatever that system rejects a create without.
+
+**A creation closes the loop it opened.** The connector creates the issue and returns its key. The engine writes that key into the master record's cross-reference, which is the same place rule 6b writes it for an issue Jira already had. From then on the machine has an address, so the next run writes to it normally and never proposes a creation again.
+
+⛔ The engine creates all of a host's fields or none of them. A create that Jira rejects leaves no partial issue behind, and the run reports the failure against that master.
 
 ---
 

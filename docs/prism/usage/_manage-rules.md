@@ -73,6 +73,8 @@ The form covers the rule's common shape: its id, its name, whether it is enabled
 
 `r` opens the whole rule as JSON in your editor, and validates it when you come back. It needs `$VISUAL` or `$EDITOR` set; without one it reports that no editor is configured and changes nothing.
 
+The browser editor gives `identityKeys`, `tieBreak` and `mirror` controls of their own. See [The review app](/docs/prism/usage/review-app) for what those panels hold.
+
 ### Your ungridded fields survive a form save
 
 **A field the grid does not show is preserved untouched when you save from the form.** Saving does not blank the seven fields above, and it does not rewrite anything you set through the JSON view.

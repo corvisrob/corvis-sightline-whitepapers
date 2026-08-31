@@ -37,6 +37,12 @@ Data moves inbox to local table to outbox, and each step answers a different que
 
 **Inboxes is where you confirm a collection.** A collector reports success even where the transmit is skipped, and a local table stays empty until a sync rule runs against the inbox.
 
+### Local datasets are declared, not collected
+
+A connector's dataset appears the first time that connector collects. A consolidated dataset belongs to no connector, so this hosting declares one as a `prism_local_table` resource in the workspace, alongside the storage and manifest resources. Duplicate one and change its `id` to add another.
+
+The engine reads its table registry from the store rather than from Windmill, so a declaration is reconciled into it before it counts. **Rules** does that when it reads its dataset list, and **Re-run** does it before a rule starts. Both are idempotent, so neither costs anything on a workspace that is already in step.
+
 ### Connectors is where an instance is configured
 
 A connector instance is one manifest resource, holding its identity, its credentials and its settings. The screen lists them, and drilling into one gives the run controls and what that instance collects.
@@ -54,6 +60,14 @@ The decisions and their effects are identical. A few practical differences are w
 **There are no key bindings.** The procedures name keys such as `a`, `r`, `d` and `D` because the terminal needs them. In the browser you click the equivalent control. The decision each one records is the same, and the distinction between reject, decline and decline-field matters just as much.
 
 **There is no starting directory.** The CLI procedures open by telling you to change into a runtime instance. The app is already bound to a workspace and its store, so that step does not apply.
+
+**Identity and missing records are controls, not JSON.** [Create and edit rules](/docs/prism/usage/manage-rules) lists seven fields the terminal editor reaches only through `r`. The browser editor gives two of them their own panels, because both decide whether records link rather than what a mapping carries.
+
+**Identity**, on a merge rule, holds the source's own id, the identity keys as a two-column grid, and the tie-break. A merge rule with no identity key writes a new master record for every record it reads. The panel says so where the keys are empty.
+
+**Missing records**, on a push rule, decides what happens to a master the target system does not hold. A push addresses a record by the id the merge rule recorded, so a master with no id is skipped on every run. Turning this on has the connector create the record, and the id it returns becomes the address for every later run. The [recipe](/docs/prism/install/bootstrap) § 6c works an example through.
+
+The other five fields are JSON in both interfaces.
 
 **Creating a rule does not ask which kind.** [Create and edit rules](/docs/prism/usage/manage-rules) says `n` asks for sync or reverse before the form. The app has no such step. Pick the target dataset and the direction follows it, exactly as it does at run time: a local target merges, a remote one pushes. The app only asks when it cannot tell, which means the target is not in the table registry.
 
